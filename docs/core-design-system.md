@@ -291,7 +291,7 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `accent3` source index | `21` (derived from L* ≈ 53.5 → round(`L/100×40`)) | Locked |
 | `accent4.source` | `#16BAC5` | Locked |
 | `accent4` source index | `28` (derived from L* ≈ 69.0 → round(`L/100×40`)) | Locked |
-| `tokens.json` path | repo root (current) | Provisional |
+| `tokens.json` path | `src/tokens.json` | Provisional |
 | Sync provider | Tokens Studio ↔ GitHub | Planned |
 
 ### Working notes
@@ -314,5 +314,5 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | --- | --- |
 | `docs/core-design-system.md` | Core spec (authority) |
 | `docs/semantic-tokens.md` | Semantic roles + Core mappings (scaffold) |
-| `scripts/generate-core-colors.mjs` | Generates Core color scales → `tokens.json` |
-| `tokens.json` | Tokens Studio sync artifact (Core generated; Semantic empty) |
+| `scripts/generate-core-colors.mjs` | Generates Core color scales → `src/tokens.json` |
+| `src/tokens.json` | Tokens Studio sync artifact (Core generated; Semantic empty) |

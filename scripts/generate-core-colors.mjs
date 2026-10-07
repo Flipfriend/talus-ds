@@ -142,6 +142,6 @@ const output = {
   $metadata: { tokenSetOrder: ["Core", "Semantic"] },
 };
 
-writeFileSync("tokens.json", JSON.stringify(output, null, 2) + "\n");
-console.log(`Wrote tokens.json (${Object.keys(SOURCES).length} sources × scale0…scale${STEPS})`);
+writeFileSync("src/tokens.json", JSON.stringify(output, null, 2) + "\n");
+console.log(`Wrote src/tokens.json (${Object.keys(SOURCES).length} sources × scale0…scale${STEPS})`);
 for (const line of report) console.log(`  ${line}`);
