@@ -1,9 +1,9 @@
 // Generates tokens.json for Tokens Studio from docs/core-design-system.md §3 / §7.
 //
 // - scale0 … scale40 (max index STEPS)
-// - Each scale aliases {core.color.<source>.source} + lighten/darken modify
-// - neutral: anchor 0, lighten only
-// - accents: anchor from L* lightness on 0–40; darken toward 0, lighten toward 40
+// - neutral: anchor 0, lighten only at 0.025 per index
+// - accents: scale0 #000000, scale40 #FFFFFF; seed plotted by L*;
+//   interior steps mix toward black or white in LCH across that side's span
 //
 // Usage: node scripts/generate-core-colors.mjs
 
@@ -47,19 +47,17 @@ function accentAnchorIndex(hex) {
   return Math.max(0, Math.min(STEPS, Math.round((L / 100) * STEPS)));
 }
 
-function modifyExtension(type, amount) {
-  return {
-    "studio.tokens": {
-      modify: {
-        type,
-        value: String(Number(amount.toFixed(3))),
-        space: COLOR_SPACE,
-      },
-    },
+function modifyExtension(type, amount, mixColor) {
+  const modify = {
+    type,
+    value: String(Number(amount.toFixed(4))),
+    space: COLOR_SPACE,
   };
+  if (mixColor) modify.color = mixColor;
+  return { "studio.tokens": { modify } };
 }
 
-function buildScale(name, seedHex, anchorIndex, { lightenOnly }) {
+function buildNeutral(name, seedHex) {
   const tokens = {
     source: { value: seedHex, type: "color" },
   };
@@ -69,46 +67,71 @@ function buildScale(name, seedHex, anchorIndex, { lightenOnly }) {
       value: `{core.color.${name}.source}`,
       type: "color",
     };
-
-    if (n !== anchorIndex) {
-      if (lightenOnly) {
-        // neutral: only indices above 0; always lighten
-        if (n > anchorIndex) {
-          token.$extensions = modifyExtension(
-            "lighten",
-            Math.min(1, (n - anchorIndex) * STEP_AMOUNT)
-          );
-        }
-      } else if (n < anchorIndex) {
-        token.$extensions = modifyExtension(
-          "darken",
-          Math.min(1, (anchorIndex - n) * STEP_AMOUNT)
-        );
-      } else {
-        token.$extensions = modifyExtension(
-          "lighten",
-          Math.min(1, (n - anchorIndex) * STEP_AMOUNT)
-        );
-      }
+    if (n > 0) {
+      token.$extensions = modifyExtension(
+        "lighten",
+        Math.min(1, n * STEP_AMOUNT)
+      );
     }
-
     tokens[`scale${n}`] = token;
   }
 
-  return { tokens, anchorIndex, L: lightnessL(seedHex) };
+  return tokens;
+}
+
+function buildAccent(name, seedHex, anchorIndex) {
+  const tokens = {
+    source: { value: seedHex, type: "color" },
+  };
+  const ref = `{core.color.${name}.source}`;
+
+  for (let n = 0; n <= STEPS; n++) {
+    if (n === 0) {
+      tokens.scale0 = { value: "#000000", type: "color" };
+      continue;
+    }
+    if (n === STEPS) {
+      tokens[`scale${STEPS}`] = { value: "#FFFFFF", type: "color" };
+      continue;
+    }
+    if (n === anchorIndex) {
+      tokens[`scale${n}`] = { value: ref, type: "color" };
+      continue;
+    }
+
+    const token = { value: ref, type: "color" };
+    if (anchorIndex > 0 && n < anchorIndex) {
+      token.$extensions = modifyExtension(
+        "mix",
+        (anchorIndex - n) / anchorIndex,
+        "#000000"
+      );
+    } else if (anchorIndex < STEPS && n > anchorIndex) {
+      token.$extensions = modifyExtension(
+        "mix",
+        (n - anchorIndex) / (STEPS - anchorIndex),
+        "#FFFFFF"
+      );
+    }
+    tokens[`scale${n}`] = token;
+  }
+
+  return tokens;
 }
 
 const color = {};
 const report = [];
 
 for (const [name, seedHex] of Object.entries(SOURCES)) {
-  const lightenOnly = name === "neutral";
-  const anchorIndex = lightenOnly ? 0 : accentAnchorIndex(seedHex);
-  const { tokens, L } = buildScale(name, seedHex, anchorIndex, { lightenOnly });
-  color[name] = tokens;
+  if (name === "neutral") {
+    color[name] = buildNeutral(name, seedHex);
+    report.push(`${name}: seed ${seedHex} → anchor scale0 (lighten-only)`);
+    continue;
+  }
+  const anchorIndex = accentAnchorIndex(seedHex);
+  color[name] = buildAccent(name, seedHex, anchorIndex);
   report.push(
-    `${name}: seed ${seedHex} → anchor scale${anchorIndex}` +
-      (lightenOnly ? " (lighten-only)" : ` (L*≈${L.toFixed(1)})`)
+    `${name}: seed ${seedHex} → anchor scale${anchorIndex} (L*≈${lightnessL(seedHex).toFixed(1)}, bookends #000000/#FFFFFF)`
   );
 }
 
