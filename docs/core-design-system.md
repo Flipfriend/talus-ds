@@ -1,6 +1,6 @@
 # Talus Design System — Core Foundations
 
-Living specification for the core token architecture of **talus-ds** (A Hill Design portfolio).  
+Living specification for the core token architecture of **talus-ds**.  
 This document is the source of truth for structure, naming, and generation rules. Scripts and `tokens.json` must follow it — not the other way around.
 
 ---
@@ -9,7 +9,7 @@ This document is the source of truth for structure, naming, and generation rules
 
 Build a small, intentional design system that:
 
-1. Sets the visual tone of the portfolio site.
+1. Sets the visual tone.
 2. Makes theming cheap: change a few **source** colors and derived scales update automatically.
 3. Separates **raw values** (core) from **meaning** (semantic) so UI can stay stable while brand color shifts.
 
