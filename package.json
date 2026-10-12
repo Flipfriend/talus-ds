@@ -1,0 +1,11 @@
+{
+  "name": "talus-ds",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "tokens": "node scripts/generate-core-colors.mjs"
+  },
+  "dependencies": {
+    "culori": "^4.0.2"
+  }
+}

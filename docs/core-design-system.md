@@ -31,7 +31,7 @@ Primary authoring tool: **Tokens Studio for Figma** (Pro), synced to this repo.
 - **Core is never applied directly in UI.** Components and styles reference Semantic tokens.
 - **Semantic never invents values.** Every Semantic color points at a Core token (or another Semantic alias).
 - **One-way dependency:** Semantic → Core. Never Core → Semantic.
-- Token sets stay enabled in Tokens Studio in order: `Core`, then `Semantic`.
+- Token themes enable one Core set and its matching Semantic set (`core-light` + `semantic-light`, or `core-dark` + `semantic-dark`).
 
 ### Out of scope for Core (for now)
 
@@ -129,28 +129,9 @@ If a seed plots to `0` or `40`, that end stays the bookend hex and the unmodifie
 
 ### 3.4 Next layer: Semantic (after Core scales)
 
-Once `core.color.*` scales exist, they feed the **Semantic** token set. Semantic tokens **alias** into Core scales (e.g. `{core.color.neutral.scale12}`) — they do not store hex values.
+Once `core.color.*` scales exist, they feed Semantic token sets. Semantic tokens **alias** into Core scales — they do not store hex values. Each role is a `bg` / `fg` pair. `fg` is chosen so the resolved pair meets WCAG 4.5:1. Modes (`light`, `dark`, further themes) are separate Core + Semantic sets with the same token paths. The pairing rules, surface steps, and theme switch live in [`docs/semantic-tokens.md`](./semantic-tokens.md).
 
-**Pathing:** Semantic lives in its own token set as `semantic.color.<role>`, and **references** `core.color.<source>.scaleN`. Do not nest Semantic under `core.color` (avoid `core.color.semantic.*`) so Core stays primitive-only and the Core → Semantic dependency stays one-way.
-
-Planned Semantic color roles:
-
-| Role | Token path (planned) |
-| --- | --- |
-| layer1 | `semantic.color.layer1` |
-| layer2 | `semantic.color.layer2` |
-| layer3 | `semantic.color.layer3` |
-| interactive | `semantic.color.interactive` |
-| callout | `semantic.color.callout` |
-| success | `semantic.color.success` |
-| warning | `semantic.color.warning` |
-| layer inverse | `semantic.color.layer-inverse` |
-| accent1 | `semantic.color.accent1` |
-| accent2 | `semantic.color.accent2` |
-| accent3 | `semantic.color.accent3` |
-| accent4 | `semantic.color.accent4` |
-
-Exact Core scale mappings for each role are **out of scope until Core ramps are locked** — document them in `docs/semantic-tokens.md` as the next step after Core generation.
+**Pathing:** `semantic.color.<role>.bg` and `semantic.color.<role>.fg` reference `core.color.<source>.scaleN`. Do not nest Semantic under `core.color` (avoid `core.color.semantic.*`) so Core stays primitive-only and the Core → Semantic dependency stays one-way.
 
 ### Guardrails — color
 
@@ -160,7 +141,7 @@ Exact Core scale mappings for each role are **out of scope until Core ramps are 
 4. Do not add Material-style named steps (`50`, `100`, …) in Core; stay on seed `source` + `scaleN`.
 5. Validate each source swatch grid in Tokens Studio before publishing styles/variables or expanding Semantic.
 6. To retheme: change seed hexes (and rebuild accent modify maps if lightness/index shifted) — never patch individual scale hexes.
-7. Do not build Semantic mappings until Core `scale0`…`scale40` ramps are approved.
+7. Regenerate Semantic pairs when Core seeds change so each `bg` / `fg` pair still meets WCAG 4.5:1.
 
 ---
 
@@ -170,15 +151,15 @@ Exact Core scale mappings for each role are **out of scope until Core ramps are 
 
 ```
 {domain}.{category}.{source}.{role}     ← Core
-{domain}.{category}.{role}              ← Semantic
+{domain}.{category}.{role}.bg|fg         ← Semantic
 ```
 
 Examples:
 
 - `core.color.neutral.source`
 - `core.color.accent1.scale12`
-- `semantic.color.layer1` *(after Core; aliases a Core scale)*
-- `semantic.color.layer-inverse` *(after Core)*
+- `semantic.color.layer2.bg` *(aliases a Core scale)*
+- `semantic.color.layer2.fg` *(aliases a Core scale; contrast ≥ 4.5:1 against `bg`)*
 
 ### Rules
 
@@ -188,7 +169,7 @@ Examples:
 | Separators | dots between path segments; hyphens inside a segment when needed | spaces, camelCase paths |
 | Scale indices | `scale0` … `scale40` (no zero-padding) | `scale01`, `scale1` as the dark end, `s0`, `neutral-100` |
 | Core sources | `neutral`, `accent1` … `accent4` | `blue`, `red`, `brand` as Core source names |
-| Semantic nesting | `semantic.color.<role>` referencing `core.color.*` | `core.color.semantic.*` |
+| Semantic nesting | `semantic.color.<role>.bg` and `.fg` referencing `core.color.*` | `core.color.semantic.*` |
 | Types | Tokens Studio `type: "color"` for all color tokens | Mixing type fields inconsistently |
 
 Semantic names describe **intent** (`layer1`, `interactive`, `success`, …), not raw scale indices.
@@ -231,8 +212,8 @@ Use this checklist whenever Core color tokens are created or regenerated:
 - [x] Neutral is seed-at-`0` + lighten-only. Accents are bookended and LCH-mixed from the plotted index.
 - [x] Neutral step amount is exactly **0.025**. Accent spacing is the full span on each side of the seed (§3.3).
 - [ ] After load in Tokens Studio: spot-check each source swatch grid (dark → light, anchor position correct).
-- [ ] Semantic set remains empty or alias-only until Core is approved.
-- [ ] No Figma color styles / variables published from Core alone for product UI until Semantic exists.
+- [x] Semantic `bg` / `fg` pairs alias Core and meet 4.5:1 (`docs/semantic-tokens.md`).
+- [ ] No Figma color styles / variables published from Core alone for product UI until Semantic is pulled in Tokens Studio.
 
 **Stop condition:** If any source ramp looks muddy, clips early, or places the brand color in the wrong part of the ramp — stop and revise §7. Do not patch individual scale tokens.
 
@@ -303,7 +284,7 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 
 1. ~~Flip §7 generation-critical rows to **Locked**.~~ **Done.**
 2. Load `tokens.json` into Tokens Studio; QA each source ramp (neutral lighten-only; accent bookends `#000000` / `#FFFFFF` with the seed between them).
-3. Fill Core → Semantic mappings in [`docs/semantic-tokens.md`](./semantic-tokens.md); emit Semantic aliases into `tokens.json`.
+3. Pull `talus-ds/src/tokens.json` into Tokens Studio and QA `light` and `dark` (`layer2` bg/fg at ≥ 4.5:1).
 4. Wire GitHub sync; duplicate Core sets in Tokens Studio for additional themes.
 
 ---
@@ -313,6 +294,6 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | Path | Role |
 | --- | --- |
 | `docs/core-design-system.md` | Core spec (authority) |
-| `docs/semantic-tokens.md` | Semantic roles + Core mappings (scaffold) |
-| `scripts/generate-core-colors.mjs` | Generates Core color scales → `talus-ds/src/tokens.json` |
-| `talus-ds/src/tokens.json` | Tokens Studio sync artifact (Core generated; Semantic empty) |
+| `docs/semantic-tokens.md` | Semantic bg/fg pairs, 4.5:1 rule, and modes |
+| `scripts/generate-core-colors.mjs` | Generates Core scales and Semantic pairs → `talus-ds/src/tokens.json` |
+| `talus-ds/src/tokens.json` | Tokens Studio sync artifact (per-mode Core and Semantic sets) |
