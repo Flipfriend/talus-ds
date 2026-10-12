@@ -1,7 +1,7 @@
 // Generates Tokens Studio files in talus-ds/src/ for a folder sync.
 //
-// Core.json and Semantic.json are separate token sets. $metadata.json
-// sets their order. Light/dark themes are deferred.
+// Core.json, Semantic.json, and talusSpacer.json are separate token sets.
+// $metadata.json sets their order. Light/dark themes are deferred.
 //
 // Usage: node scripts/generate-core-colors.mjs
 
@@ -25,6 +25,9 @@ const SOURCES = {
   danger: "#C3352B",
 };
 
+const SPACER_BASE = 4;
+const SPACER_MAX_PX = 300;
+const SPACER_FULL_PX = 1000;
 const BORDER_MIN = 3;
 const UI_SURFACES = { bg: 38, "01": 34, "02": 30 };
 const OBJ_KEYS = ["01", "02", "03", "04"];
@@ -388,8 +391,33 @@ function buildSemantic(core) {
   };
 }
 
+function buildSpacer() {
+  const tokens = {
+    base: { value: String(SPACER_BASE), type: "spacing" },
+  };
+  const lines = [`talusSpacer.base ${SPACER_BASE}`];
+
+  for (let px = 0; px <= SPACER_MAX_PX; px += SPACER_BASE) {
+    const n = px / SPACER_BASE;
+    tokens[String(n)] = {
+      value: `{talusSpacer.base} * ${n}`,
+      type: "spacing",
+    };
+    lines.push(`talusSpacer.${n} = ${px}`);
+  }
+
+  const fullSteps = SPACER_FULL_PX / SPACER_BASE;
+  tokens.full = {
+    value: `{talusSpacer.base} * ${fullSteps}`,
+    type: "spacing",
+  };
+  lines.push(`talusSpacer.full = ${SPACER_FULL_PX}`);
+  return { tokens, lines };
+}
+
 const core = buildCore(SOURCES);
 const semantic = buildSemantic(core);
+const spacer = buildSpacer();
 
 mkdirSync(OUT_DIR, { recursive: true });
 rmSync(`${OUT_DIR}/tokens.json`, { force: true });
@@ -403,13 +431,18 @@ writeFileSync(
   JSON.stringify({ semantic: { color: semantic.color } }, null, 2) + "\n"
 );
 writeFileSync(
+  `${OUT_DIR}/talusSpacer.json`,
+  JSON.stringify(spacer.tokens, null, 2) + "\n"
+);
+writeFileSync(
   `${OUT_DIR}/$metadata.json`,
-  JSON.stringify({ tokenSetOrder: ["Core", "Semantic"] }, null, 2) + "\n"
+  JSON.stringify({ tokenSetOrder: ["Core", "Semantic", "talusSpacer"] }, null, 2) + "\n"
 );
 writeFileSync(`${OUT_DIR}/$themes.json`, "[]\n");
 
-const report = [...core.lines, ...semantic.lines];
+const report = [...core.lines, ...semantic.lines, ...spacer.lines];
 
 console.log(`Wrote ${OUT_DIR}/Core.json`);
 console.log(`Wrote ${OUT_DIR}/Semantic.json`);
+console.log(`Wrote ${OUT_DIR}/talusSpacer.json`);
 for (const line of report) console.log(line);

@@ -1,0 +1,314 @@
+{
+  "0": {
+    "value": "{talusSpacer.base} * 0",
+    "type": "spacing"
+  },
+  "1": {
+    "value": "{talusSpacer.base} * 1",
+    "type": "spacing"
+  },
+  "2": {
+    "value": "{talusSpacer.base} * 2",
+    "type": "spacing"
+  },
+  "3": {
+    "value": "{talusSpacer.base} * 3",
+    "type": "spacing"
+  },
+  "4": {
+    "value": "{talusSpacer.base} * 4",
+    "type": "spacing"
+  },
+  "5": {
+    "value": "{talusSpacer.base} * 5",
+    "type": "spacing"
+  },
+  "6": {
+    "value": "{talusSpacer.base} * 6",
+    "type": "spacing"
+  },
+  "7": {
+    "value": "{talusSpacer.base} * 7",
+    "type": "spacing"
+  },
+  "8": {
+    "value": "{talusSpacer.base} * 8",
+    "type": "spacing"
+  },
+  "9": {
+    "value": "{talusSpacer.base} * 9",
+    "type": "spacing"
+  },
+  "10": {
+    "value": "{talusSpacer.base} * 10",
+    "type": "spacing"
+  },
+  "11": {
+    "value": "{talusSpacer.base} * 11",
+    "type": "spacing"
+  },
+  "12": {
+    "value": "{talusSpacer.base} * 12",
+    "type": "spacing"
+  },
+  "13": {
+    "value": "{talusSpacer.base} * 13",
+    "type": "spacing"
+  },
+  "14": {
+    "value": "{talusSpacer.base} * 14",
+    "type": "spacing"
+  },
+  "15": {
+    "value": "{talusSpacer.base} * 15",
+    "type": "spacing"
+  },
+  "16": {
+    "value": "{talusSpacer.base} * 16",
+    "type": "spacing"
+  },
+  "17": {
+    "value": "{talusSpacer.base} * 17",
+    "type": "spacing"
+  },
+  "18": {
+    "value": "{talusSpacer.base} * 18",
+    "type": "spacing"
+  },
+  "19": {
+    "value": "{talusSpacer.base} * 19",
+    "type": "spacing"
+  },
+  "20": {
+    "value": "{talusSpacer.base} * 20",
+    "type": "spacing"
+  },
+  "21": {
+    "value": "{talusSpacer.base} * 21",
+    "type": "spacing"
+  },
+  "22": {
+    "value": "{talusSpacer.base} * 22",
+    "type": "spacing"
+  },
+  "23": {
+    "value": "{talusSpacer.base} * 23",
+    "type": "spacing"
+  },
+  "24": {
+    "value": "{talusSpacer.base} * 24",
+    "type": "spacing"
+  },
+  "25": {
+    "value": "{talusSpacer.base} * 25",
+    "type": "spacing"
+  },
+  "26": {
+    "value": "{talusSpacer.base} * 26",
+    "type": "spacing"
+  },
+  "27": {
+    "value": "{talusSpacer.base} * 27",
+    "type": "spacing"
+  },
+  "28": {
+    "value": "{talusSpacer.base} * 28",
+    "type": "spacing"
+  },
+  "29": {
+    "value": "{talusSpacer.base} * 29",
+    "type": "spacing"
+  },
+  "30": {
+    "value": "{talusSpacer.base} * 30",
+    "type": "spacing"
+  },
+  "31": {
+    "value": "{talusSpacer.base} * 31",
+    "type": "spacing"
+  },
+  "32": {
+    "value": "{talusSpacer.base} * 32",
+    "type": "spacing"
+  },
+  "33": {
+    "value": "{talusSpacer.base} * 33",
+    "type": "spacing"
+  },
+  "34": {
+    "value": "{talusSpacer.base} * 34",
+    "type": "spacing"
+  },
+  "35": {
+    "value": "{talusSpacer.base} * 35",
+    "type": "spacing"
+  },
+  "36": {
+    "value": "{talusSpacer.base} * 36",
+    "type": "spacing"
+  },
+  "37": {
+    "value": "{talusSpacer.base} * 37",
+    "type": "spacing"
+  },
+  "38": {
+    "value": "{talusSpacer.base} * 38",
+    "type": "spacing"
+  },
+  "39": {
+    "value": "{talusSpacer.base} * 39",
+    "type": "spacing"
+  },
+  "40": {
+    "value": "{talusSpacer.base} * 40",
+    "type": "spacing"
+  },
+  "41": {
+    "value": "{talusSpacer.base} * 41",
+    "type": "spacing"
+  },
+  "42": {
+    "value": "{talusSpacer.base} * 42",
+    "type": "spacing"
+  },
+  "43": {
+    "value": "{talusSpacer.base} * 43",
+    "type": "spacing"
+  },
+  "44": {
+    "value": "{talusSpacer.base} * 44",
+    "type": "spacing"
+  },
+  "45": {
+    "value": "{talusSpacer.base} * 45",
+    "type": "spacing"
+  },
+  "46": {
+    "value": "{talusSpacer.base} * 46",
+    "type": "spacing"
+  },
+  "47": {
+    "value": "{talusSpacer.base} * 47",
+    "type": "spacing"
+  },
+  "48": {
+    "value": "{talusSpacer.base} * 48",
+    "type": "spacing"
+  },
+  "49": {
+    "value": "{talusSpacer.base} * 49",
+    "type": "spacing"
+  },
+  "50": {
+    "value": "{talusSpacer.base} * 50",
+    "type": "spacing"
+  },
+  "51": {
+    "value": "{talusSpacer.base} * 51",
+    "type": "spacing"
+  },
+  "52": {
+    "value": "{talusSpacer.base} * 52",
+    "type": "spacing"
+  },
+  "53": {
+    "value": "{talusSpacer.base} * 53",
+    "type": "spacing"
+  },
+  "54": {
+    "value": "{talusSpacer.base} * 54",
+    "type": "spacing"
+  },
+  "55": {
+    "value": "{talusSpacer.base} * 55",
+    "type": "spacing"
+  },
+  "56": {
+    "value": "{talusSpacer.base} * 56",
+    "type": "spacing"
+  },
+  "57": {
+    "value": "{talusSpacer.base} * 57",
+    "type": "spacing"
+  },
+  "58": {
+    "value": "{talusSpacer.base} * 58",
+    "type": "spacing"
+  },
+  "59": {
+    "value": "{talusSpacer.base} * 59",
+    "type": "spacing"
+  },
+  "60": {
+    "value": "{talusSpacer.base} * 60",
+    "type": "spacing"
+  },
+  "61": {
+    "value": "{talusSpacer.base} * 61",
+    "type": "spacing"
+  },
+  "62": {
+    "value": "{talusSpacer.base} * 62",
+    "type": "spacing"
+  },
+  "63": {
+    "value": "{talusSpacer.base} * 63",
+    "type": "spacing"
+  },
+  "64": {
+    "value": "{talusSpacer.base} * 64",
+    "type": "spacing"
+  },
+  "65": {
+    "value": "{talusSpacer.base} * 65",
+    "type": "spacing"
+  },
+  "66": {
+    "value": "{talusSpacer.base} * 66",
+    "type": "spacing"
+  },
+  "67": {
+    "value": "{talusSpacer.base} * 67",
+    "type": "spacing"
+  },
+  "68": {
+    "value": "{talusSpacer.base} * 68",
+    "type": "spacing"
+  },
+  "69": {
+    "value": "{talusSpacer.base} * 69",
+    "type": "spacing"
+  },
+  "70": {
+    "value": "{talusSpacer.base} * 70",
+    "type": "spacing"
+  },
+  "71": {
+    "value": "{talusSpacer.base} * 71",
+    "type": "spacing"
+  },
+  "72": {
+    "value": "{talusSpacer.base} * 72",
+    "type": "spacing"
+  },
+  "73": {
+    "value": "{talusSpacer.base} * 73",
+    "type": "spacing"
+  },
+  "74": {
+    "value": "{talusSpacer.base} * 74",
+    "type": "spacing"
+  },
+  "75": {
+    "value": "{talusSpacer.base} * 75",
+    "type": "spacing"
+  },
+  "base": {
+    "value": "4",
+    "type": "spacing"
+  },
+  "full": {
+    "value": "{talusSpacer.base} * 250",
+    "type": "spacing"
+  }
+}

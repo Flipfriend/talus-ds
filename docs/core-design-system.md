@@ -23,15 +23,16 @@ Primary authoring tool: **Tokens Studio for Figma** (Pro), synced to this repo.
 
 | Layer | Token set | Role | May contain raw hex? |
 | --- | --- | --- | --- |
-| **Core** | `Core` | Primitives: color scales, spacing, type sizes, radii, etc. | Yes (sources only) |
-| **Semantic** | `Semantic` | Intent-based aliases used by components and UI | No — aliases only |
+| **Core** | `Core` | Color primitives | Yes (sources only) |
+| **Semantic** | `Semantic` | Intent-based color aliases used by components and UI | No — aliases only |
+| **Spacer** | `talusSpacer` | Spacing, padding, and margin steps. `{talusSpacer.n}` = `n × base` | The `base` token only |
 
 ### Rules
 
 - **Core is never applied directly in UI.** Components and styles reference Semantic tokens.
 - **Semantic never invents values.** Every Semantic color points at a Core token (or another Semantic alias).
 - **One-way dependency:** Semantic → Core. Never Core → Semantic.
-- Token sets stay enabled in Tokens Studio in order: `Core`, then `Semantic`.
+- Token sets stay enabled in Tokens Studio in order: `Core`, `Semantic`, then `talusSpacer`.
 
 ### Out of scope for Core (for now)
 
@@ -295,6 +296,8 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | --- | --- |
 | `docs/core-design-system.md` | Core spec (authority) |
 | `docs/semantic-tokens.md` | Semantic bg/fg pairs, 4.5:1 rule, and modes |
-| `scripts/generate-core-colors.mjs` | Generates `talus-ds/src/Core.json` and `Semantic.json` |
+| `docs/spacing-tokens.md` | `talusSpacer` scale: base × index, unitless |
+| `scripts/generate-core-colors.mjs` | Generates `Core.json`, `Semantic.json`, and `talusSpacer.json` |
 | `talus-ds/src/Core.json` | Core token set for Tokens Studio |
 | `talus-ds/src/Semantic.json` | Semantic token set for Tokens Studio |
+| `talus-ds/src/talusSpacer.json` | Spacing token set for Tokens Studio |
