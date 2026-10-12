@@ -6,7 +6,7 @@
 // Usage: node scripts/generate-core-colors.mjs
 
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { formatHex, interpolate, wcagContrast, wcagLuminance } from "culori";
+import { formatHex, interpolate, wcagContrast } from "culori";
 
 const STEPS = 40;
 const STEP_AMOUNT = 0.025;
@@ -22,31 +22,13 @@ const SOURCES = {
   accent2: "#EDD3C4",
   accent3: "#558B6E",
   accent4: "#16BAC5",
+  danger: "#C3352B",
 };
 
-/** Surface background indexes for the single Semantic set. Accent roles use the family seed step. */
-const SURFACE_BG = {
-  layer1: 38,
-  layer2: 34,
-  layer3: 30,
-  callout: 28,
-  "layer-inverse": 4,
-};
-
-const ROLES = [
-  { name: "layer1", ramp: "neutral", textRamp: "neutral" },
-  { name: "layer2", ramp: "neutral", textRamp: "neutral" },
-  { name: "layer3", ramp: "neutral", textRamp: "neutral" },
-  { name: "callout", ramp: "neutral", textRamp: "neutral" },
-  { name: "layer-inverse", ramp: "neutral", textRamp: "neutral" },
-  { name: "interactive", ramp: "accent1", textRamp: "accent1" },
-  { name: "accent1", ramp: "accent1", textRamp: "accent1" },
-  { name: "accent2", ramp: "accent2", textRamp: "accent2" },
-  { name: "success", ramp: "accent3", textRamp: "accent3" },
-  { name: "accent3", ramp: "accent3", textRamp: "accent3" },
-  { name: "warning", ramp: "accent4", textRamp: "accent4" },
-  { name: "accent4", ramp: "accent4", textRamp: "accent4" },
-];
+const BORDER_MIN = 3;
+const UI_SURFACES = { bg: 38, "01": 34, "02": 30 };
+const OBJ_KEYS = ["01", "02", "03", "04"];
+const REQUIRED_OBJ = ["01", "04"];
 
 function mixHex(from, to, amount) {
   if (amount <= 0) return formatHex(from);
@@ -190,68 +172,220 @@ function pickOnRamp(bgHex, palette, bgIndex) {
   return null;
 }
 
-/** Nearest opposite-luminance neutral step that still clears MIN_CONTRAST. */
-function pickNeutralFallback(bgHex, neutralPalette) {
-  const bgLum = wcagLuminance(bgHex);
-  const bgIsLight = bgLum >= 0.5;
-  const ranked = [];
-
-  for (let index = 0; index <= STEPS; index++) {
-    const hex = neutralPalette[index];
-    const ratio = wcagContrast(bgHex, hex);
-    if (ratio < MIN_CONTRAST) continue;
-    const lum = wcagLuminance(hex);
-    const opposite = bgIsLight ? lum < bgLum : lum > bgLum;
-    ranked.push({ index, ratio, distance: Math.abs(lum - bgLum), opposite });
+function ratiosAgainst(hex, surfaces) {
+  const ratios = {};
+  for (const [name, bgHex] of Object.entries(surfaces)) {
+    ratios[name] = wcagContrast(bgHex, hex);
   }
+  return ratios;
+}
 
-  ranked.sort((a, b) => {
-    if (a.opposite !== b.opposite) return a.opposite ? -1 : 1;
-    return a.distance - b.distance;
-  });
+function formatRatios(ratios) {
+  return Object.entries(ratios)
+    .map(([name, ratio]) => `${name} ${ratio.toFixed(2)}:1`)
+    .join("  ");
+}
 
-  return ranked[0] ?? null;
+function bestRatio(bgHex, palette) {
+  return palette.reduce((max, hex) => Math.max(max, wcagContrast(bgHex, hex)), 0);
+}
+
+/** Lightest accent step that still clears minRatio on a light surface. */
+function pickLink(bgHex, palette) {
+  for (let index = STEPS; index >= 0; index--) {
+    const ratio = wcagContrast(bgHex, palette[index]);
+    if (ratio >= MIN_CONTRAST) return { index, ratio };
+  }
+  return null;
+}
+
+function requirePair(name, picked, bgHex, palette) {
+  if (picked) return picked;
+  throw new Error(
+    `${name}: no foreground reaches ${MIN_CONTRAST}:1 (best ${bestRatio(bgHex, palette).toFixed(2)}:1)`
+  );
 }
 
 function buildSemantic(core) {
-  const color = {};
+  const neutral = core.resolved.neutral;
+  const surfaces = Object.fromEntries(
+    Object.entries(UI_SURFACES).map(([key, index]) => [
+      `ui.${key}`,
+      neutral[index],
+    ])
+  );
   const lines = [];
 
-  for (const role of ROLES) {
-    const bgIndex =
-      role.ramp === "neutral" && SURFACE_BG[role.name] !== undefined
-        ? SURFACE_BG[role.name]
-        : core.anchors[role.ramp];
-    const bgHex = core.resolved[role.ramp][bgIndex];
+  const ui = {
+    bg: alias("neutral", UI_SURFACES.bg),
+    "01": alias("neutral", UI_SURFACES["01"]),
+    "02": alias("neutral", UI_SURFACES["02"]),
+  };
+  for (const [key, index] of Object.entries(UI_SURFACES)) {
+    lines.push(`ui.${key} neutral.scale${index}`);
+  }
 
-    let textRamp = role.textRamp;
-    let picked = pickOnRamp(bgHex, core.resolved[textRamp], bgIndex);
+  const textPassing = [];
+  for (let index = 0; index <= STEPS; index++) {
+    const ratios = ratiosAgainst(neutral[index], surfaces);
+    const min = Math.min(...Object.values(ratios));
+    if (min >= MIN_CONTRAST) textPassing.push({ index, ratios });
+  }
 
-    if (!picked && textRamp !== "neutral") {
-      textRamp = "neutral";
-      picked = pickNeutralFallback(bgHex, core.resolved.neutral);
+  if (textPassing.length < 2) {
+    throw new Error(
+      `obj.01 and obj.04 need a high-contrast step and a distinct 4.5:1 step (found ${textPassing.length})`
+    );
+  }
+  const hierarchySlots = OBJ_KEYS.length;
+  const lastPassing = textPassing.length - 1;
+  const chosen = [];
+  const used = new Set();
+  for (let slot = 0; slot < hierarchySlots; slot++) {
+    const pos = Math.round((slot * lastPassing) / (hierarchySlots - 1));
+    if (used.has(pos)) continue;
+    used.add(pos);
+    chosen.push(textPassing[pos]);
+  }
+  const obj = {};
+  const objSteps = {
+    "01": chosen[0],
+    "02": chosen.length > 2 ? chosen[1] : undefined,
+    "03": chosen.length > 3 ? chosen[2] : undefined,
+    "04": chosen[chosen.length - 1],
+  };
+  for (const key of OBJ_KEYS) {
+    const step = objSteps[key];
+    if (!step) {
+      lines.push(`obj.${key} omitted`);
+      if (REQUIRED_OBJ.includes(key)) {
+        throw new Error(`obj.${key} cannot clear ${MIN_CONTRAST}:1 on every UI surface`);
+      }
+      continue;
     }
-
-    if (!picked) {
-      const best = core.resolved[role.textRamp].reduce((max, hex) => {
-        const ratio = wcagContrast(bgHex, hex);
-        return ratio > max ? ratio : max;
-      }, 0);
-      throw new Error(
-        `${role.name}: no foreground reaches ${MIN_CONTRAST}:1 (best ${best.toFixed(2)}:1 on ${role.textRamp})`
-      );
-    }
-
-    color[role.name] = {
-      bg: alias(role.ramp, bgIndex),
-      fg: alias(textRamp, picked.index),
-    };
+    obj[key] = alias("neutral", step.index);
     lines.push(
-      `${role.name} bg ${role.ramp}.scale${bgIndex} fg ${textRamp}.scale${picked.index} ${picked.ratio.toFixed(2)}:1`
+      `obj.${key} neutral.scale${step.index}  ${formatRatios(step.ratios)}`
     );
   }
 
-  return { color, lines };
+  const textIndex = textPassing[0].index;
+  const borderCeiling = UI_SURFACES["02"];
+  const borderPassing = [];
+  for (let index = textIndex + 1; index < borderCeiling; index++) {
+    const ratios = ratiosAgainst(neutral[index], surfaces);
+    const min = Math.min(...Object.values(ratios));
+    if (min >= BORDER_MIN) borderPassing.push({ index, ratios });
+  }
+  if (borderPassing.length < 3) {
+    const detail = borderPassing.length
+      ? borderPassing.map((step) => `scale${step.index} ${formatRatios(step.ratios)}`).join(" | ")
+      : "none";
+    throw new Error(`ui.03–ui.05 need 3 steps at ${BORDER_MIN}:1 (found ${detail})`);
+  }
+  const borders = borderPassing.slice(-3);
+  const borderKeys = ["05", "04", "03"];
+  borders.forEach((step, offset) => {
+    const key = borderKeys[offset];
+    ui[key] = alias("neutral", step.index);
+    lines.push(`ui.${key} neutral.scale${step.index}  ${formatRatios(step.ratios)}`);
+  });
+  const orderedUi = {
+    bg: ui.bg,
+    "01": ui["01"],
+    "02": ui["02"],
+    "03": ui["03"],
+    "04": ui["04"],
+    "05": ui["05"],
+  };
+
+  const fills = [
+    { name: "interactive.01", ramp: "accent1" },
+    { name: "support.success", ramp: "accent3" },
+    { name: "support.info", ramp: "accent4" },
+  ];
+  const pairs = {};
+  for (const fill of fills) {
+    const bgIndex = core.anchors[fill.ramp];
+    const palette = core.resolved[fill.ramp];
+    const bgHex = palette[bgIndex];
+    const picked = requirePair(
+      `${fill.name}.fg`,
+      pickOnRamp(bgHex, palette, bgIndex),
+      bgHex,
+      palette
+    );
+    pairs[fill.name] = {
+      bg: alias(fill.ramp, bgIndex),
+      fg: alias(fill.ramp, picked.index),
+    };
+    lines.push(
+      `${fill.name}.bg ${fill.ramp}.scale${bgIndex}  ${fill.name}.fg ${fill.ramp}.scale${picked.index}  ${picked.ratio.toFixed(2)}:1`
+    );
+  }
+
+  const dangerRamp = "danger";
+  const dangerPalette = core.resolved[dangerRamp];
+  const dangerBgIndex = core.anchors[dangerRamp];
+  const dangerBgHex = dangerPalette[dangerBgIndex];
+  const dangerObj = requirePair(
+    "support.danger.obj",
+    pickOnRamp(dangerBgHex, dangerPalette, dangerBgIndex),
+    dangerBgHex,
+    dangerPalette
+  );
+  const dangerContrast = pickLink(surfaces["ui.02"], dangerPalette);
+  if (!dangerContrast) {
+    throw new Error(
+      `support.danger.contrast: no step reaches ${MIN_CONTRAST}:1 on ui.02 (best ${bestRatio(surfaces["ui.02"], dangerPalette).toFixed(2)}:1)`
+    );
+  }
+  const dangerContrastRatios = ratiosAgainst(
+    dangerPalette[dangerContrast.index],
+    surfaces
+  );
+  lines.push(
+    `support.danger.bg ${dangerRamp}.scale${dangerBgIndex}  support.danger.obj ${dangerRamp}.scale${dangerObj.index}  ${dangerObj.ratio.toFixed(2)}:1`
+  );
+  lines.push(
+    `support.danger.contrast ${dangerRamp}.scale${dangerContrast.index}  ${formatRatios(dangerContrastRatios)}`
+  );
+
+  const linkBg = surfaces["ui.02"];
+  const link = requirePair(
+    "interactive.link",
+    pickLink(linkBg, core.resolved.accent1),
+    linkBg,
+    core.resolved.accent1
+  );
+  lines.push(
+    `interactive.link accent1.scale${link.index}  ui.02 ${link.ratio.toFixed(2)}:1`
+  );
+
+  const disabledIndex = ACCENT_ANCHOR;
+  lines.push(`interactive.disabled neutral.scale${disabledIndex}`);
+
+  return {
+    color: {
+      ui: orderedUi,
+      obj,
+      interactive: {
+        "01": pairs["interactive.01"],
+        link: alias("accent1", link.index),
+        disabled: alias("neutral", disabledIndex),
+      },
+      support: {
+        success: pairs["support.success"],
+        info: pairs["support.info"],
+        danger: {
+          bg: alias(dangerRamp, dangerBgIndex),
+          obj: alias(dangerRamp, dangerObj.index),
+          contrast: alias(dangerRamp, dangerContrast.index),
+        },
+      },
+    },
+    lines,
+  };
 }
 
 const core = buildCore(SOURCES);

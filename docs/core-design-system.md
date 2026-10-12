@@ -54,6 +54,7 @@ Each **source** is a self-contained ramp under `core.color.<source>`:
 | `accent2` | A secondary color scale |
 | `accent3` | A tertiary color scale |
 | `accent4` | A quaternary color scale |
+| `danger` | A danger color scale. Same bookended ramp as the accents |
 
 Adding or removing a source requires an update to this doc first.
 
@@ -85,7 +86,7 @@ Example: `core.color.neutral.source`, `core.color.accent1.scale12`.
 
 ### 3.1 Source-driven updates (required)
 
-**Invariant:** Editing any of the five seed hexes (`core.color.<source>.source`) must update that source’s entire `scale0`…`scale40` ramp. No hand-editing of scale tokens.
+**Invariant:** Editing any seed hex (`core.color.<source>.source`) must update that source’s entire `scale0`…`scale40` ramp. No hand-editing of scale tokens.
 
 How this works in **Tokens Studio for Figma**:
 
@@ -94,7 +95,7 @@ How this works in **Tokens Studio for Figma**:
 3. Changing a seed recomputes resolved colors for that source’s scales when the plugin evaluates tokens.
 4. For **accents**, the unmodified seed stays at `scale20`. Changing the hex rebuilds the mix toward `#000000` and `#FFFFFF` around that fixed slot. The bookends stay `#000000` and `#FFFFFF`.
 
-**Theming:** Duplicate this Core structure (new token set / theme in Tokens Studio) and change the five seed hexes. Same scale rules, new palette. Semantic tokens keep pointing at `core.color.*` so UI meaning stays stable across themes.
+**Theming:** Duplicate this Core structure (new token set / theme in Tokens Studio) and change the seed hexes. Same scale rules, new palette. Semantic tokens keep pointing at `core.color.*` so UI meaning stays stable across themes.
 
 ### 3.2 Neutral (one-direction ramp)
 
@@ -111,7 +112,7 @@ Example with step `0.025`: `scale1` → lighten `0.025`, `scale2` → `0.05`, �
 
 ### 3.3 Accents (bookended ramp)
 
-For `accent1` … `accent4`, the ramp is pinned to black and white. The seed always sits at **`scale20`**, and every step between the bookends is an even **LCH mix** across that side’s span.
+For `accent1` … `accent4` and `danger`, the ramp is pinned to black and white. The seed always sits at **`scale20`**, and every step between the bookends is an even **LCH mix** across that side’s span.
 
 1. **Anchor index** `S` is **`20`** for every accent. It does not move when the seed hex changes.
 2. **Bookends** (fixed hex, not aliases):
@@ -127,7 +128,7 @@ The fixed 2.5% lighten/darken step does **not** apply to accents. Dividing each 
 
 Once `core.color.*` scales exist, they feed the **Semantic** token set. Semantic tokens **alias** into Core scales — they do not store hex values. Each role is a `bg` / `fg` pair. `fg` is chosen so the resolved pair meets WCAG 4.5:1. Light and dark themes come later; the file currently has one `Core` set and one `Semantic` set. Pairing rules live in [`docs/semantic-tokens.md`](./semantic-tokens.md).
 
-**Pathing:** `semantic.color.<role>.bg` and `semantic.color.<role>.fg` reference `core.color.<source>.scaleN`. Do not nest Semantic under `core.color` (avoid `core.color.semantic.*`) so Core stays primitive-only and the Core → Semantic dependency stays one-way.
+**Pathing:** `semantic.color.*` references `core.color.<source>.scaleN`. Do not nest Semantic under `core.color` (avoid `core.color.semantic.*`) so Core stays primitive-only and the Core → Semantic dependency stays one-way.
 
 ### Guardrails — color
 
@@ -154,8 +155,9 @@ Examples:
 
 - `core.color.neutral.source`
 - `core.color.accent1.scale12`
-- `semantic.color.layer2.bg` *(aliases a Core scale)*
-- `semantic.color.layer2.fg` *(aliases a Core scale; contrast ≥ 4.5:1 against `bg`)*
+- `semantic.color.ui.bg` *(page surface)*
+- `semantic.color.obj.01` *(text; 4.5:1 against the UI surfaces)*
+- `semantic.color.interactive.01.bg` *(primary button fill)*
 
 ### Rules
 
@@ -164,11 +166,11 @@ Examples:
 | Case | lowercase | `Neutral`, `Accent1` |
 | Separators | dots between path segments; hyphens inside a segment when needed | spaces, camelCase paths |
 | Scale indices | `scale0` … `scale40` (no zero-padding) | `scale01`, `scale1` as the dark end, `s0`, `neutral-100` |
-| Core sources | `neutral`, `accent1` … `accent4` | `blue`, `red`, `brand` as Core source names |
-| Semantic nesting | `semantic.color.<role>.bg` and `.fg` referencing `core.color.*` | `core.color.semantic.*` |
+| Core sources | `neutral`, `accent1` … `accent4`, `danger` | `blue`, `red`, `brand` as Core source names |
+| Semantic nesting | `semantic.color.*` referencing `core.color.*` | `core.color.semantic.*` |
 | Types | Tokens Studio `type: "color"` for all color tokens | Mixing type fields inconsistently |
 
-Semantic names describe **intent** (`layer1`, `interactive`, `success`, …), not raw scale indices.
+Semantic names describe **intent** (`ui.bg`, `obj.01`, `interactive.01`, `support.success`), not raw scale indices.
 
 ---
 
@@ -268,6 +270,8 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `accent3` source index | `20` (fixed) | Locked |
 | `accent4.source` | `#16BAC5` | Locked |
 | `accent4` source index | `20` (fixed) | Locked |
+| `danger.source` | `#C3352B` | Proposed |
+| `danger` source index | `20` (fixed) | Locked |
 | Token files | `talus-ds/src/Core.json` and `talus-ds/src/Semantic.json` | Provisional |
 | Sync provider | Tokens Studio ↔ GitHub | Planned |
 
@@ -280,7 +284,7 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 
 1. ~~Flip §7 generation-critical rows to **Locked**.~~ **Done.**
 2. Load `talus-ds/src` into Tokens Studio; QA each source ramp (neutral lighten-only; accent bookends `#000000` / `#FFFFFF` with the seed between them).
-3. Pull that folder into Tokens Studio and QA the single `Core` and `Semantic` sets (`layer2` bg/fg at ≥ 4.5:1).
+3. Pull that folder into Tokens Studio and QA `Core` and `Semantic` (`obj.01` at ≥ 4.5:1 on `ui.bg`, `ui.01`, and `ui.02`).
 4. Wire GitHub sync; duplicate Core sets in Tokens Studio for additional themes.
 
 ---
