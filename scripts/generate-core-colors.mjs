@@ -1,8 +1,8 @@
 // Generates talus-ds/src/tokens.json for Tokens Studio.
 //
 // Core: scale0 … scale40 from seed hexes (docs/core-design-system.md §3).
-// Semantic: bg/fg aliases chosen so resolved contrast is at least 4.5:1
-// (docs/semantic-tokens.md). One Core set and one Semantic set per mode.
+// Semantic: one set of bg/fg aliases chosen so resolved contrast is at least 4.5:1
+// (docs/semantic-tokens.md). Light/dark themes are deferred; output is Core + Semantic.
 //
 // Usage: node scripts/generate-core-colors.mjs
 
@@ -24,22 +24,13 @@ const SOURCES = {
   accent4: "#16BAC5",
 };
 
-/** Surface background indexes. Accent roles use the family seed step instead. */
+/** Surface background indexes for the single Semantic set. Accent roles use the family seed step. */
 const SURFACE_BG = {
-  light: {
-    layer1: 38,
-    layer2: 34,
-    layer3: 30,
-    callout: 28,
-    "layer-inverse": 4,
-  },
-  dark: {
-    layer1: 2,
-    layer2: 6,
-    layer3: 10,
-    callout: 12,
-    "layer-inverse": 36,
-  },
+  layer1: 38,
+  layer2: 34,
+  layer3: 30,
+  callout: 28,
+  "layer-inverse": 4,
 };
 
 const ROLES = [
@@ -55,12 +46,6 @@ const ROLES = [
   { name: "accent3", ramp: "accent3", textRamp: "accent3" },
   { name: "warning", ramp: "accent4", textRamp: "accent4" },
   { name: "accent4", ramp: "accent4", textRamp: "accent4" },
-];
-
-/** First themes. Add a mode with seed overrides for another brand. */
-const MODES = [
-  { name: "light", appearance: "light", seeds: SOURCES },
-  { name: "dark", appearance: "dark", seeds: SOURCES },
 ];
 
 function hexToRgb(hex) {
@@ -254,15 +239,14 @@ function pickNeutralFallback(bgHex, neutralPalette) {
   return ranked[0] ?? null;
 }
 
-function buildSemantic(appearance, core) {
-  const surfaces = SURFACE_BG[appearance];
+function buildSemantic(core) {
   const color = {};
   const lines = [];
 
   for (const role of ROLES) {
     const bgIndex =
-      role.ramp === "neutral" && surfaces[role.name] !== undefined
-        ? surfaces[role.name]
+      role.ramp === "neutral" && SURFACE_BG[role.name] !== undefined
+        ? SURFACE_BG[role.name]
         : core.anchors[role.ramp];
     const bgHex = core.resolved[role.ramp][bgIndex];
 
@@ -280,7 +264,7 @@ function buildSemantic(appearance, core) {
         return ratio > max ? ratio : max;
       }, 0);
       throw new Error(
-        `${appearance} ${role.name}: no foreground reaches ${MIN_CONTRAST}:1 (best ${best.toFixed(2)}:1 on ${role.textRamp})`
+        `${role.name}: no foreground reaches ${MIN_CONTRAST}:1 (best ${best.toFixed(2)}:1 on ${role.textRamp})`
       );
     }
 
@@ -296,39 +280,17 @@ function buildSemantic(appearance, core) {
   return { color, lines };
 }
 
+const core = buildCore(SOURCES);
+const semantic = buildSemantic(core);
+
 const output = {
+  Core: { core: { color: core.color } },
+  Semantic: { semantic: { color: semantic.color } },
   $themes: [],
-  $metadata: { tokenSetOrder: [] },
+  $metadata: { tokenSetOrder: ["Core", "Semantic"] },
 };
-const report = [];
 
-for (const mode of MODES) {
-  const coreSet = `core-${mode.name}`;
-  const semanticSet = `semantic-${mode.name}`;
-  const seeds = mode.seeds ?? SOURCES;
-  const core = buildCore(seeds);
-  const semantic = buildSemantic(mode.appearance, core);
-
-  output[coreSet] = { core: { color: core.color } };
-  output[semanticSet] = { semantic: { color: semantic.color } };
-  output.$metadata.tokenSetOrder.push(coreSet, semanticSet);
-
-  const selectedTokenSets = {};
-  for (const other of MODES) {
-    const on = other.name === mode.name;
-    selectedTokenSets[`core-${other.name}`] = on ? "enabled" : "disabled";
-    selectedTokenSets[`semantic-${other.name}`] = on ? "enabled" : "disabled";
-  }
-  output.$themes.push({
-    id: mode.name,
-    name: mode.name,
-    selectedTokenSets,
-  });
-
-  report.push(`${mode.name}`);
-  for (const line of core.lines) report.push(`  ${line}`);
-  for (const line of semantic.lines) report.push(`  ${line}`);
-}
+const report = [...core.lines, ...semantic.lines];
 
 writeFileSync(OUT_PATH, JSON.stringify(output, null, 2) + "\n");
 console.log(`Wrote ${OUT_PATH}`);

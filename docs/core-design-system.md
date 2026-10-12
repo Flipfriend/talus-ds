@@ -31,7 +31,7 @@ Primary authoring tool: **Tokens Studio for Figma** (Pro), synced to this repo.
 - **Core is never applied directly in UI.** Components and styles reference Semantic tokens.
 - **Semantic never invents values.** Every Semantic color points at a Core token (or another Semantic alias).
 - **One-way dependency:** Semantic → Core. Never Core → Semantic.
-- Token themes enable one Core set and its matching Semantic set (`core-light` + `semantic-light`, or `core-dark` + `semantic-dark`).
+- Token sets stay enabled in Tokens Studio in order: `Core`, then `Semantic`.
 
 ### Out of scope for Core (for now)
 
@@ -129,7 +129,7 @@ If a seed plots to `0` or `40`, that end stays the bookend hex and the unmodifie
 
 ### 3.4 Next layer: Semantic (after Core scales)
 
-Once `core.color.*` scales exist, they feed Semantic token sets. Semantic tokens **alias** into Core scales — they do not store hex values. Each role is a `bg` / `fg` pair. `fg` is chosen so the resolved pair meets WCAG 4.5:1. Modes (`light`, `dark`, further themes) are separate Core + Semantic sets with the same token paths. The pairing rules, surface steps, and theme switch live in [`docs/semantic-tokens.md`](./semantic-tokens.md).
+Once `core.color.*` scales exist, they feed the **Semantic** token set. Semantic tokens **alias** into Core scales — they do not store hex values. Each role is a `bg` / `fg` pair. `fg` is chosen so the resolved pair meets WCAG 4.5:1. Light and dark themes come later; the file currently has one `Core` set and one `Semantic` set. Pairing rules live in [`docs/semantic-tokens.md`](./semantic-tokens.md).
 
 **Pathing:** `semantic.color.<role>.bg` and `semantic.color.<role>.fg` reference `core.color.<source>.scaleN`. Do not nest Semantic under `core.color` (avoid `core.color.semantic.*`) so Core stays primitive-only and the Core → Semantic dependency stays one-way.
 
@@ -284,7 +284,7 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 
 1. ~~Flip §7 generation-critical rows to **Locked**.~~ **Done.**
 2. Load `tokens.json` into Tokens Studio; QA each source ramp (neutral lighten-only; accent bookends `#000000` / `#FFFFFF` with the seed between them).
-3. Pull `talus-ds/src/tokens.json` into Tokens Studio and QA `light` and `dark` (`layer2` bg/fg at ≥ 4.5:1).
+3. Pull `talus-ds/src/tokens.json` into Tokens Studio and QA the single `Core` and `Semantic` sets (`layer2` bg/fg at ≥ 4.5:1).
 4. Wire GitHub sync; duplicate Core sets in Tokens Studio for additional themes.
 
 ---
@@ -296,4 +296,4 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `docs/core-design-system.md` | Core spec (authority) |
 | `docs/semantic-tokens.md` | Semantic bg/fg pairs, 4.5:1 rule, and modes |
 | `scripts/generate-core-colors.mjs` | Generates Core scales and Semantic pairs → `talus-ds/src/tokens.json` |
-| `talus-ds/src/tokens.json` | Tokens Studio sync artifact (per-mode Core and Semantic sets) |
+| `talus-ds/src/tokens.json` | Tokens Studio sync artifact (`Core` and `Semantic`) |

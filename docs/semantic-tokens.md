@@ -25,7 +25,7 @@ semantic.color.<role>.fg
 
 `bg` and `fg` are references, for example `{core.color.neutral.scale34}` and `{core.color.neutral.scale8}`.
 
-Token sets are per mode: `core-light` + `semantic-light`, `core-dark` + `semantic-dark`. A Tokens Studio theme enables exactly one pair. Components always bind the semantic paths above. The scale step behind `fg` (and, for surfaces, `bg`) may differ by mode, because the step that passes 4.5:1 on a light surface is not the step that passes on a dark surface.
+Token sets: `Core`, then `Semantic`. Both stay enabled. Light and dark themes are deferred; there is one Core ramp and one Semantic map.
 
 ---
 
@@ -33,8 +33,8 @@ Token sets are per mode: `core-light` + `semantic-light`, `core-dark` + `semanti
 
 | Role | Background | Text |
 | --- | --- | --- |
-| layer1, layer2, layer3, callout | `neutral` surface step for the mode | `neutral`, opposite end of the ramp |
-| layer-inverse | `neutral`, flipped surface | `neutral`, opposite end |
+| layer1, layer2, layer3, callout | `neutral` surface step | `neutral`, opposite end of the ramp |
+| layer-inverse | `neutral.scale4` | `neutral`, opposite end |
 | interactive, accent1 | `accent1` seed step | `accent1`, else `neutral` if that ramp cannot pass |
 | accent2 | `accent2` seed step | `accent2`, else `neutral` |
 | success, accent3 | `accent3` seed step | `accent3`, else `neutral` |
@@ -42,21 +42,19 @@ Token sets are per mode: `core-light` + `semantic-light`, `core-dark` + `semanti
 
 ### 3.1 Surface steps
 
-Light mode keeps layer backgrounds on the light end. Dark mode moves them to the dark end. Inverse swaps that relationship.
+| Token | Core alias |
+| --- | --- |
+| `layer1.bg` | `neutral.scale38` |
+| `layer2.bg` | `neutral.scale34` |
+| `layer3.bg` | `neutral.scale30` |
+| `callout.bg` | `neutral.scale28` |
+| `layer-inverse.bg` | `neutral.scale4` |
 
-| Token | Light | Dark |
-| --- | --- | --- |
-| `layer1.bg` | `neutral.scale38` | `neutral.scale2` |
-| `layer2.bg` | `neutral.scale34` | `neutral.scale6` |
-| `layer3.bg` | `neutral.scale30` | `neutral.scale10` |
-| `callout.bg` | `neutral.scale28` | `neutral.scale12` |
-| `layer-inverse.bg` | `neutral.scale4` | `neutral.scale36` |
-
-Accent, interactive, success, and warning backgrounds stay on that family’s unmodified seed step in every mode.
+Accent, interactive, success, and warning backgrounds stay on that family’s unmodified seed step.
 
 ### 3.2 Foreground rule
 
-`fg` is not a fixed index. For each mode the generator:
+`fg` is not a fixed index. The generator:
 
 1. Resolves every Core step to sRGB (LCH `lighten` for neutral, LCH `mix` toward `#000000` / `#FFFFFF` for accents).
 2. Measures WCAG contrast of the resolved `bg` against every step on the text ramp.
@@ -71,9 +69,7 @@ Re-run `node scripts/generate-core-colors.mjs` after a seed change so `fg` can m
 
 ## 4. Modes
 
-A mode is a name, an appearance (`light` or `dark`), and optional seed overrides. The first generated themes are `light` and `dark`, both using the Core seeds in the generator.
-
-Another brand theme is another pair of sets (`core-<name>`, `semantic-<name>`) with different seeds and the same appearance. `$themes` lists every mode. Only one Core set and its Semantic set are enabled at a time, so `{core.color.neutral.scaleN}` resolves against the active Core set.
+Light, dark, and extra brand themes are not in the token file yet. When they are added, they should keep these same `semantic.color.<role>.bg` and `.fg` names and switch sets around them. Until then, Tokens Studio should show only `Core` and `Semantic`.
 
 ---
 
@@ -82,11 +78,11 @@ Another brand theme is another pair of sets (`core-<name>`, `semantic-<name>`) w
 1. No hex on Semantic color tokens — aliases only.
 2. Do not reference other Semantic tokens. `bg` and `fg` point at Core.
 3. Components and Figma styles for product UI use Semantic, not Core.
-4. Semantic paths stay stable across modes. Scale indexes inside the alias may change when contrast is regenerated.
+4. Semantic paths stay stable. Scale indexes inside an alias may change when contrast is regenerated.
 5. Do not ship a pair whose resolved contrast is under 4.5:1.
 
 ---
 
 ## 6. Tokens Studio
 
-Pull `talus-ds/src/tokens.json`. The theme dropdown lists `light` and `dark`. Bind a button’s fill to `{semantic.color.layer2.bg}` and its label to `{semantic.color.layer2.fg}` (or the `interactive` pair for a colored button). Switch the theme to check the other mode.
+Pull `talus-ds/src/tokens.json`. Enable `Core` and `Semantic`. Bind a button’s fill to `{semantic.color.layer2.bg}` and its label to `{semantic.color.layer2.fg}` (or the `interactive` pair for a colored button).
