@@ -1,19 +1,18 @@
-// Generates talus-ds/src/tokens.json for Tokens Studio.
+// Generates Tokens Studio files in talus-ds/src/ for a folder sync.
 //
-// Core: scale0 … scale40 from seed hexes (docs/core-design-system.md §3).
-// Semantic: one set of bg/fg aliases chosen so resolved contrast is at least 4.5:1
-// (docs/semantic-tokens.md). Light/dark themes are deferred; output is Core + Semantic.
+// Core.json and Semantic.json are separate token sets. $metadata.json
+// sets their order. Light/dark themes are deferred.
 //
 // Usage: node scripts/generate-core-colors.mjs
 
-import { writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { formatHex, interpolate, wcagContrast, wcagLuminance } from "culori";
 
 const STEPS = 40;
 const STEP_AMOUNT = 0.025;
 const COLOR_SPACE = "lch";
 const MIN_CONTRAST = 4.5;
-const OUT_PATH = "talus-ds/src/tokens.json";
+const OUT_DIR = "talus-ds/src";
 
 /** Default seed hexes — only editable color values (see §7). */
 const SOURCES = {
@@ -283,15 +282,25 @@ function buildSemantic(core) {
 const core = buildCore(SOURCES);
 const semantic = buildSemantic(core);
 
-const output = {
-  Core: { core: { color: core.color } },
-  Semantic: { semantic: { color: semantic.color } },
-  $themes: [],
-  $metadata: { tokenSetOrder: ["Core", "Semantic"] },
-};
+mkdirSync(OUT_DIR, { recursive: true });
+rmSync(`${OUT_DIR}/tokens.json`, { force: true });
+
+writeFileSync(
+  `${OUT_DIR}/Core.json`,
+  JSON.stringify({ core: { color: core.color } }, null, 2) + "\n"
+);
+writeFileSync(
+  `${OUT_DIR}/Semantic.json`,
+  JSON.stringify({ semantic: { color: semantic.color } }, null, 2) + "\n"
+);
+writeFileSync(
+  `${OUT_DIR}/$metadata.json`,
+  JSON.stringify({ tokenSetOrder: ["Core", "Semantic"] }, null, 2) + "\n"
+);
+writeFileSync(`${OUT_DIR}/$themes.json`, "[]\n");
 
 const report = [...core.lines, ...semantic.lines];
 
-writeFileSync(OUT_PATH, JSON.stringify(output, null, 2) + "\n");
-console.log(`Wrote ${OUT_PATH}`);
+console.log(`Wrote ${OUT_DIR}/Core.json`);
+console.log(`Wrote ${OUT_DIR}/Semantic.json`);
 for (const line of report) console.log(line);

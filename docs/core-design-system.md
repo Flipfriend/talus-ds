@@ -1,7 +1,7 @@
 # Talus Design System — Core Foundations
 
 Living specification for the core token architecture of **talus-ds**.  
-This document is the source of truth for structure, naming, and generation rules. Scripts and `tokens.json` must follow it — not the other way around.
+This document is the source of truth for structure, naming, and generation rules. Scripts and the token files in `talus-ds/src/` must follow it — not the other way around.
 
 ---
 
@@ -182,13 +182,13 @@ Semantic names describe **intent** (`layer1`, `interactive`, `success`, …), no
 
 1. Spec changes land in this file first.
 2. Token structure is authored / verified in **Tokens Studio**.
-3. Repo sync: GitHub provider → this repo → `tokens.json` (path TBD if relocated).
+3. Repo sync: GitHub provider → this repo → folder `talus-ds/src` (`Core.json`, `Semantic.json`).
 4. Optional generator scripts may **only** emit structures that match this spec. Scripts are helpers, not the design.
 
 ### Sync expectations
 
 - Push Core (and later Semantic) from Figma after visual QA.
-- Prefer one active `tokens.json` as the sync artifact.
+- Prefer the `talus-ds/src` folder as the sync artifact: one JSON file per token set.
 - Do not hand-edit large generated scale blocks in git unless fixing a known bug; regenerate from agreed parameters instead.
 
 ### Figma file hygiene (from reference layout)
@@ -272,19 +272,19 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `accent3` source index | `21` (derived from L* ≈ 53.5 → round(`L/100×40`)) | Locked |
 | `accent4.source` | `#16BAC5` | Locked |
 | `accent4` source index | `28` (derived from L* ≈ 69.0 → round(`L/100×40`)) | Locked |
-| `tokens.json` path | `talus-ds/src/tokens.json` | Provisional |
+| Token files | `talus-ds/src/Core.json` and `talus-ds/src/Semantic.json` | Provisional |
 | Sync provider | Tokens Studio ↔ GitHub | Planned |
 
 ### Working notes
 
 - Accent indices are recomputed by `scripts/generate-core-colors.mjs` from CIE L* whenever seed hexes change. Accent ramps are bookended (`#000000` / `#FFFFFF`) with an LCH mix across each side.
-- `tokens.json` Core set matches §3 / §7. Spot-check in Tokens Studio before locking Semantic mappings.
+- `Core.json` matches §3 / §7. Spot-check in Tokens Studio before treating Semantic mappings as final.
 
 ## 8. Next steps (ordered)
 
 1. ~~Flip §7 generation-critical rows to **Locked**.~~ **Done.**
-2. Load `tokens.json` into Tokens Studio; QA each source ramp (neutral lighten-only; accent bookends `#000000` / `#FFFFFF` with the seed between them).
-3. Pull `talus-ds/src/tokens.json` into Tokens Studio and QA the single `Core` and `Semantic` sets (`layer2` bg/fg at ≥ 4.5:1).
+2. Load `talus-ds/src` into Tokens Studio; QA each source ramp (neutral lighten-only; accent bookends `#000000` / `#FFFFFF` with the seed between them).
+3. Pull that folder into Tokens Studio and QA the single `Core` and `Semantic` sets (`layer2` bg/fg at ≥ 4.5:1).
 4. Wire GitHub sync; duplicate Core sets in Tokens Studio for additional themes.
 
 ---
@@ -295,5 +295,6 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | --- | --- |
 | `docs/core-design-system.md` | Core spec (authority) |
 | `docs/semantic-tokens.md` | Semantic bg/fg pairs, 4.5:1 rule, and modes |
-| `scripts/generate-core-colors.mjs` | Generates Core scales and Semantic pairs → `talus-ds/src/tokens.json` |
-| `talus-ds/src/tokens.json` | Tokens Studio sync artifact (`Core` and `Semantic`) |
+| `scripts/generate-core-colors.mjs` | Generates `talus-ds/src/Core.json` and `Semantic.json` |
+| `talus-ds/src/Core.json` | Core token set for Tokens Studio |
+| `talus-ds/src/Semantic.json` | Semantic token set for Tokens Studio |

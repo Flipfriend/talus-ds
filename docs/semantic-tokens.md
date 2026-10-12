@@ -85,4 +85,4 @@ Light, dark, and extra brand themes are not in the token file yet. When they are
 
 ## 6. Tokens Studio
 
-Pull `talus-ds/src/tokens.json`. Enable `Core` and `Semantic`. Bind a button’s fill to `{semantic.color.layer2.bg}` and its label to `{semantic.color.layer2.fg}` (or the `interactive` pair for a colored button).
+Point Tokens Studio’s GitHub sync at the folder `talus-ds/src` (not a single file). That folder contains `Core.json` and `Semantic.json`. Enable both sets. Bind a button’s fill to `{semantic.color.layer2.bg}` and its label to `{semantic.color.layer2.fg}` (or the `interactive` pair for a colored button).

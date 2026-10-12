@@ -1,0 +1,126 @@
+{
+  "semantic": {
+    "color": {
+      "layer1": {
+        "bg": {
+          "value": "{core.color.neutral.scale38}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.neutral.scale15}",
+          "type": "color"
+        }
+      },
+      "layer2": {
+        "bg": {
+          "value": "{core.color.neutral.scale34}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.neutral.scale12}",
+          "type": "color"
+        }
+      },
+      "layer3": {
+        "bg": {
+          "value": "{core.color.neutral.scale30}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.neutral.scale9}",
+          "type": "color"
+        }
+      },
+      "callout": {
+        "bg": {
+          "value": "{core.color.neutral.scale28}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.neutral.scale8}",
+          "type": "color"
+        }
+      },
+      "layer-inverse": {
+        "bg": {
+          "value": "{core.color.neutral.scale4}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.neutral.scale24}",
+          "type": "color"
+        }
+      },
+      "interactive": {
+        "bg": {
+          "value": "{core.color.accent1.scale22}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.accent1.scale4}",
+          "type": "color"
+        }
+      },
+      "accent1": {
+        "bg": {
+          "value": "{core.color.accent1.scale22}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.accent1.scale4}",
+          "type": "color"
+        }
+      },
+      "accent2": {
+        "bg": {
+          "value": "{core.color.accent2.scale35}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.accent2.scale16}",
+          "type": "color"
+        }
+      },
+      "success": {
+        "bg": {
+          "value": "{core.color.accent3.scale21}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.accent3.scale3}",
+          "type": "color"
+        }
+      },
+      "accent3": {
+        "bg": {
+          "value": "{core.color.accent3.scale21}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.accent3.scale3}",
+          "type": "color"
+        }
+      },
+      "warning": {
+        "bg": {
+          "value": "{core.color.accent4.scale28}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.accent4.scale10}",
+          "type": "color"
+        }
+      },
+      "accent4": {
+        "bg": {
+          "value": "{core.color.accent4.scale28}",
+          "type": "color"
+        },
+        "fg": {
+          "value": "{core.color.accent4.scale10}",
+          "type": "color"
+        }
+      }
+    }
+  }
+}
