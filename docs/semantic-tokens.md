@@ -35,10 +35,10 @@ Token sets: `Core`, then `Semantic`. Both stay enabled. Light and dark themes ar
 | --- | --- | --- |
 | layer1, layer2, layer3, callout | `neutral` surface step | `neutral`, opposite end of the ramp |
 | layer-inverse | `neutral.scale4` | `neutral`, opposite end |
-| interactive, accent1 | `accent1` seed step | `accent1`, else `neutral` if that ramp cannot pass |
-| accent2 | `accent2` seed step | `accent2`, else `neutral` |
-| success, accent3 | `accent3` seed step | `accent3`, else `neutral` |
-| warning, accent4 | `accent4` seed step | `accent4`, else `neutral` |
+| interactive, accent1 | `accent1.scale20` | `accent1`, else `neutral` if that ramp cannot pass |
+| accent2 | `accent2.scale20` | `accent2`, else `neutral` |
+| success, accent3 | `accent3.scale20` | `accent3`, else `neutral` |
+| warning, accent4 | `accent4.scale20` | `accent4`, else `neutral` |
 
 ### 3.1 Surface steps
 
@@ -50,7 +50,7 @@ Token sets: `Core`, then `Semantic`. Both stay enabled. Light and dark themes ar
 | `callout.bg` | `neutral.scale28` |
 | `layer-inverse.bg` | `neutral.scale4` |
 
-Accent, interactive, success, and warning backgrounds stay on that family’s unmodified seed step.
+Accent, interactive, success, and warning backgrounds stay on that family’s `scale20`.
 
 ### 3.2 Foreground rule
 

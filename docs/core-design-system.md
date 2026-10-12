@@ -92,7 +92,7 @@ How this works in **Tokens Studio for Figma**:
 1. Interior `scaleN` tokens **alias** `{core.color.<source>.source}` (accent `scale0` / `scale40` are the fixed bookends).
 2. Each modified step carries a Tokens Studio **modify** in `lch` — neutral uses `lighten`; accents use `mix` toward black or white.
 3. Changing a seed recomputes resolved colors for that source’s scales when the plugin evaluates tokens.
-4. For **accents**, if the new hex’s lightness shifts its plotted index (§3.3), the mix map must be **rebuilt** (generator or Tokens Studio) so the unmodified slot moves with the color. Hue-only tweaks at similar lightness keep the same index and update in place. The bookends stay `#000000` and `#FFFFFF`.
+4. For **accents**, the unmodified seed stays at `scale20`. Changing the hex rebuilds the mix toward `#000000` and `#FFFFFF` around that fixed slot. The bookends stay `#000000` and `#FFFFFF`.
 
 **Theming:** Duplicate this Core structure (new token set / theme in Tokens Studio) and change the five seed hexes. Same scale rules, new palette. Semantic tokens keep pointing at `core.color.*` so UI meaning stays stable across themes.
 
@@ -111,21 +111,17 @@ Example with step `0.025`: `scale1` → lighten `0.025`, `scale2` → `0.05`, �
 
 ### 3.3 Accents (bookended ramp)
 
-For `accent1` … `accent4`, the ramp is pinned to black and white. The seed sits on the axis by lightness, and every step between the bookends is an even **LCH mix** across that side’s span.
+For `accent1` … `accent4`, the ramp is pinned to black and white. The seed always sits at **`scale20`**, and every step between the bookends is an even **LCH mix** across that side’s span.
 
-1. **Plot** the seed hex on the `0`–`40` axis by relative lightness (`L = 0` → index `0`, `L = 100` → index `40`, round to nearest integer, clamp to `0`–`40`). Call that index `S`.
+1. **Anchor index** `S` is **`20`** for every accent. It does not move when the seed hex changes.
 2. **Bookends** (fixed hex, not aliases):
    - `scale0` = `#000000`
    - `scale40` = `#FFFFFF`
-3. **Seed slot** `scaleS` (when `0 < S < 40`) = unmodified `{core.color.<source>.source}`.
-4. **Dark side** (`0 < index < S`): alias the seed and **`mix`** toward `#000000` in `lch`. Amount = `(S - index) / S` (closer to `0` → more black).
-5. **Light side** (`S < index < 40`): alias the seed and **`mix`** toward `#FFFFFF` in `lch`. Amount = `(index - S) / (40 - S)` (closer to `40` → more white).
+3. **Seed slot** `scale20` = unmodified `{core.color.<source>.source}`.
+4. **Dark side** (`0 < index < 20`): alias the seed and **`mix`** toward `#000000` in `lch`. Amount = `(20 - index) / 20`.
+5. **Light side** (`20 < index < 40`): alias the seed and **`mix`** toward `#FFFFFF` in `lch`. Amount = `(index - 20) / 20`.
 
 The fixed 2.5% lighten/darken step does **not** apply to accents. Dividing each side’s full span is what lands the ends on `#000000` and `#FFFFFF` and spaces the in-between colors through the seed.
-
-Accent anchor indices are **derived from the hex**, not hand-picked in §7. Record the computed index in §7 after calculation for transparency.
-
-If a seed plots to `0` or `40`, that end stays the bookend hex and the unmodified seed is not duplicated onto the scale. Rebuild the mix amounts whenever `S` changes.
 
 ### 3.4 Next layer: Semantic (after Core scales)
 
@@ -140,7 +136,7 @@ Once `core.color.*` scales exist, they feed the **Semantic** token set. Semantic
 3. Cap modify amounts at `1.0`. Accent ends are the bookends, not extra one-off tokens.
 4. Do not add Material-style named steps (`50`, `100`, …) in Core; stay on seed `source` + `scaleN`.
 5. Validate each source swatch grid in Tokens Studio before publishing styles/variables or expanding Semantic.
-6. To retheme: change seed hexes (and rebuild accent modify maps if lightness/index shifted) — never patch individual scale hexes.
+6. To retheme: change seed hexes and regenerate. Accent seeds stay at `scale20`. Never patch individual scale hexes.
 7. Regenerate Semantic pairs when Core seeds change so each `bg` / `fg` pair still meets WCAG 4.5:1.
 
 ---
@@ -206,10 +202,10 @@ Artboards are documentation, not the token source of truth. Tokens Studio is.
 
 Use this checklist whenever Core color tokens are created or regenerated:
 
-- [x] §7 decisions are filled in (source hexes, scale max index, color space; accent indices derived per §3.3).
+- [x] §7 decisions are filled in (source hexes, scale max index, color space; accent anchor fixed at `scale20`).
 - [x] This document’s §3 rules still match what we intend to generate.
 - [x] Generator / Tokens Studio setup uses seed hex + reference + modify. Accent `scale0` / `scale40` are the only baked scale hexes (`#000000` / `#FFFFFF`).
-- [x] Neutral is seed-at-`0` + lighten-only. Accents are bookended and LCH-mixed from the plotted index.
+- [x] Neutral is seed-at-`0` + lighten-only. Accents are bookended and LCH-mixed from `scale20`.
 - [x] Neutral step amount is exactly **0.025**. Accent spacing is the full span on each side of the seed (§3.3).
 - [ ] After load in Tokens Studio: spot-check each source swatch grid (dark → light, anchor position correct).
 - [x] Semantic `bg` / `fg` pairs alias Core and meet 4.5:1 (`docs/semantic-tokens.md`).
@@ -230,8 +226,8 @@ Record locked choices here. Anything blank is not ready to automate.
 **Scale max index (`STEPS`):** integer for the **last** scale token index. Example: `40` means tokens `scale0` … `scale40` (41 tokens). Not a count of 40.
 
 **Source indices:**
-- `neutral` — always `0` (fixed; not derived).
-- Accents — **derived** from source hex lightness per §3.3; record the computed index here after plotting. Do not invent accent indices independently of the hex.
+- `neutral` — always `0` (fixed).
+- Accents — always `20` (fixed). The seed hex does not move this index.
 
 **Status meanings:**
 
@@ -265,13 +261,13 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `neutral.source` | `#212121` | Locked |
 | `neutral` source index | `0` (fixed) | Locked |
 | `accent1.source` | `#9575CD` | Locked |
-| `accent1` source index | `22` (derived from L* ≈ 55.6 → round(`L/100×40`)) | Locked |
+| `accent1` source index | `20` (fixed) | Locked |
 | `accent2.source` | `#EDD3C4` | Locked |
-| `accent2` source index | `35` (derived from L* ≈ 86.3 → round(`L/100×40`)) | Locked |
+| `accent2` source index | `20` (fixed) | Locked |
 | `accent3.source` | `#558B6E` | Locked |
-| `accent3` source index | `21` (derived from L* ≈ 53.5 → round(`L/100×40`)) | Locked |
+| `accent3` source index | `20` (fixed) | Locked |
 | `accent4.source` | `#16BAC5` | Locked |
-| `accent4` source index | `28` (derived from L* ≈ 69.0 → round(`L/100×40`)) | Locked |
+| `accent4` source index | `20` (fixed) | Locked |
 | Token files | `talus-ds/src/Core.json` and `talus-ds/src/Semantic.json` | Provisional |
 | Sync provider | Tokens Studio ↔ GitHub | Planned |
 

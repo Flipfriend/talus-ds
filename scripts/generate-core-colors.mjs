@@ -13,6 +13,7 @@ const STEP_AMOUNT = 0.025;
 const COLOR_SPACE = "lch";
 const MIN_CONTRAST = 4.5;
 const OUT_DIR = "talus-ds/src";
+const ACCENT_ANCHOR = 20;
 
 /** Default seed hexes — only editable color values (see §7). */
 const SOURCES = {
@@ -46,31 +47,6 @@ const ROLES = [
   { name: "warning", ramp: "accent4", textRamp: "accent4" },
   { name: "accent4", ramp: "accent4", textRamp: "accent4" },
 ];
-
-function hexToRgb(hex) {
-  const h = hex.replace("#", "");
-  return [
-    parseInt(h.slice(0, 2), 16) / 255,
-    parseInt(h.slice(2, 4), 16) / 255,
-    parseInt(h.slice(4, 6), 16) / 255,
-  ];
-}
-
-function srgbToLinear(c) {
-  return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-}
-
-/** CIE L* from relative luminance (D65) — used to plot accents on 0–STEPS. */
-function lightnessL(hex) {
-  const [r, g, b] = hexToRgb(hex).map(srgbToLinear);
-  const Y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-  return Y <= 0.008856 ? Y * 903.3 : 116 * Math.pow(Y, 1 / 3) - 16;
-}
-
-function accentAnchorIndex(hex) {
-  const L = lightnessL(hex);
-  return Math.max(0, Math.min(STEPS, Math.round((L / 100) * STEPS)));
-}
 
 function mixHex(from, to, amount) {
   if (amount <= 0) return formatHex(from);
@@ -175,13 +151,12 @@ function buildCore(seeds) {
       lines.push(`${name}: seed ${seedHex} → anchor scale0 (lighten-only)`);
       continue;
     }
-    const anchorIndex = accentAnchorIndex(seedHex);
-    const built = buildAccent(name, seedHex, anchorIndex);
+    const built = buildAccent(name, seedHex, ACCENT_ANCHOR);
     color[name] = built.tokens;
     resolved[name] = built.resolved;
-    anchors[name] = anchorIndex;
+    anchors[name] = ACCENT_ANCHOR;
     lines.push(
-      `${name}: seed ${seedHex} → anchor scale${anchorIndex} (L*≈${lightnessL(seedHex).toFixed(1)}, bookends #000000/#FFFFFF)`
+      `${name}: seed ${seedHex} → anchor scale${ACCENT_ANCHOR} (bookends #000000/#FFFFFF)`
     );
   }
 
