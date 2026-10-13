@@ -1,8 +1,7 @@
 // Generates Tokens Studio files in talus-ds/src/ for a folder sync.
 //
-// Core.json, Semantic.json, talusSpacer.json, and the hover/pressed
-// override sets are separate token sets. $metadata.json sets their order.
-// $themes.json turns a state override on without renaming tokens.
+// Core.json, Semantic.json, and talusSpacer.json are separate token sets.
+// $metadata.json sets their order. Hover and pressed live inside Semantic.
 //
 // Usage: node scripts/generate-core-colors.mjs
 
@@ -212,6 +211,38 @@ function requirePair(name, picked, bgHex, palette) {
   );
 }
 
+const STATE_SHIFTS = { hover: 4, pressed: 8 };
+const STATE_PAIRS = [
+  { group: "interactive", key: null, ramp: "accent1", text: "fg", label: "interactive" },
+  { group: "support", key: "success", ramp: "success", text: "fg", label: "support.success" },
+  { group: "support", key: "info", ramp: "info", text: "fg", label: "support.info" },
+  { group: "support", key: "danger", ramp: "danger", text: "obj", label: "support.danger" },
+];
+
+function pickState(core, ramp, steps, label) {
+  const anchor = core.anchors[ramp];
+  const palette = core.resolved[ramp];
+
+  for (const direction of [-1, 1]) {
+    const bgIndex = anchor + direction * steps;
+    if (bgIndex < 0 || bgIndex > STEPS) continue;
+    const picked = pickOnRamp(palette[bgIndex], palette, bgIndex);
+    if (!picked) continue;
+    return { bgIndex, textIndex: picked.index, ratio: picked.ratio, direction };
+  }
+
+  throw new Error(
+    `${label}: no foreground reaches ${MIN_CONTRAST}:1 at ${ramp}.scale${anchor} ± ${steps}`
+  );
+}
+
+function statePair(ramp, textKey, chosen) {
+  return {
+    bg: alias(ramp, chosen.bgIndex),
+    [textKey]: alias(ramp, chosen.textIndex),
+  };
+}
+
 function buildSemantic(core) {
   const neutral = core.resolved.neutral;
   const surfaces = Object.fromEntries(
@@ -371,24 +402,57 @@ function buildSemantic(core) {
   const disabledIndex = ACCENT_ANCHOR;
   lines.push(`interactive.disabled neutral.scale${disabledIndex}`);
 
+  const interactive = {
+    "01": pairs["interactive.01"],
+    link: alias("accent1", link.index),
+    disabled: alias("neutral", disabledIndex),
+  };
+  const support = {
+    success: { ...pairs["support.success"] },
+    info: { ...pairs["support.info"] },
+    danger: {
+      bg: alias(dangerRamp, dangerBgIndex),
+      obj: alias(dangerRamp, dangerObj.index),
+      contrast: alias(dangerRamp, dangerContrast.index),
+    },
+  };
+  const stateTokens = {};
+
+  for (const [mode, steps] of Object.entries(STATE_SHIFTS)) {
+    for (const pair of STATE_PAIRS) {
+      const chosen = pickState(core, pair.ramp, steps, `${mode} ${pair.label}`);
+      const tokens = statePair(pair.ramp, pair.text, chosen);
+      const slot = pair.key ?? pair.group;
+      stateTokens[slot] = stateTokens[slot] ?? {};
+      stateTokens[slot][mode] = tokens;
+      const side = chosen.direction < 0 ? "darker" : "lighter";
+      lines.push(
+        `${pair.label}.${mode}.bg ${pair.ramp}.scale${chosen.bgIndex} (${side})  ${pair.label}.${mode}.${pair.text} ${pair.ramp}.scale${chosen.textIndex}  ${chosen.ratio.toFixed(2)}:1`
+      );
+    }
+  }
+
+  const orderedInteractive = {
+    "01": interactive["01"],
+    hover: stateTokens.interactive.hover,
+    pressed: stateTokens.interactive.pressed,
+    link: interactive.link,
+    disabled: interactive.disabled,
+  };
+  for (const key of ["success", "info", "danger"]) {
+    support[key] = {
+      ...support[key],
+      hover: stateTokens[key].hover,
+      pressed: stateTokens[key].pressed,
+    };
+  }
+
   return {
     color: {
       ui: orderedUi,
       obj,
-      interactive: {
-        "01": pairs["interactive.01"],
-        link: alias("accent1", link.index),
-        disabled: alias("neutral", disabledIndex),
-      },
-      support: {
-        success: pairs["support.success"],
-        info: pairs["support.info"],
-        danger: {
-          bg: alias(dangerRamp, dangerBgIndex),
-          obj: alias(dangerRamp, dangerObj.index),
-          contrast: alias(dangerRamp, dangerContrast.index),
-        },
-      },
+      interactive: orderedInteractive,
+      support,
     },
     lines,
   };
@@ -418,97 +482,14 @@ function buildSpacer() {
   return { tokens, lines };
 }
 
-const STATE_SHIFTS = { hover: 4, pressed: 8 };
-const STATE_PAIRS = [
-  { path: ["interactive", "01"], ramp: "accent1", text: "fg", label: "interactive.01" },
-  { path: ["support", "success"], ramp: "success", text: "fg", label: "support.success" },
-  { path: ["support", "info"], ramp: "info", text: "fg", label: "support.info" },
-  { path: ["support", "danger"], ramp: "danger", text: "obj", label: "support.danger" },
-];
-
-function setToken(root, path, key, token) {
-  let node = root;
-  for (const part of ["semantic", "color", ...path]) {
-    node[part] = node[part] ?? {};
-    node = node[part];
-  }
-  node[key] = token;
-}
-
-function buildStateModes(core) {
-  const modes = {};
-  const lines = [];
-
-  for (const [mode, steps] of Object.entries(STATE_SHIFTS)) {
-    const tree = {};
-    for (const pair of STATE_PAIRS) {
-      const anchor = core.anchors[pair.ramp];
-      const palette = core.resolved[pair.ramp];
-      let chosen = null;
-
-      for (const direction of [-1, 1]) {
-        const bgIndex = anchor + direction * steps;
-        if (bgIndex < 0 || bgIndex > STEPS) continue;
-        const picked = pickOnRamp(palette[bgIndex], palette, bgIndex);
-        if (!picked) continue;
-        chosen = { bgIndex, picked, direction };
-        break;
-      }
-
-      if (!chosen) {
-        throw new Error(
-          `${mode} ${pair.label}: no foreground reaches ${MIN_CONTRAST}:1 at ${pair.ramp}.scale${anchor} ± ${steps}`
-        );
-      }
-
-      setToken(tree, pair.path, "bg", alias(pair.ramp, chosen.bgIndex));
-      setToken(tree, pair.path, pair.text, alias(pair.ramp, chosen.picked.index));
-      const side = chosen.direction < 0 ? "darker" : "lighter";
-      lines.push(
-        `${mode} ${pair.label}.bg ${pair.ramp}.scale${chosen.bgIndex} (${side})  ${pair.label}.${pair.text} ${pair.ramp}.scale${chosen.picked.index}  ${chosen.picked.ratio.toFixed(2)}:1`
-      );
-    }
-    modes[mode] = tree;
-  }
-
-  return { modes, lines };
-}
-
-function interactionThemes() {
-  const sets = ["Semantic-hover", "Semantic-pressed"];
-  return ["enabled", "hover", "pressed"].map((name) => {
-    const selectedTokenSets = {
-      Core: "source",
-      Semantic: "enabled",
-      talusSpacer: "enabled",
-    };
-    for (const set of sets) {
-      selectedTokenSets[set] = set === `Semantic-${name}` ? "enabled" : "disabled";
-    }
-    return {
-      id: name,
-      name,
-      group: "interaction",
-      selectedTokenSets,
-      $figmaStyleReferences: {},
-    };
-  });
-}
-
 const core = buildCore(SOURCES);
 const semantic = buildSemantic(core);
 const spacer = buildSpacer();
-const states = buildStateModes(core);
-const tokenSetOrder = [
-  "Core",
-  "Semantic",
-  "talusSpacer",
-  "Semantic-hover",
-  "Semantic-pressed",
-];
 
 mkdirSync(OUT_DIR, { recursive: true });
 rmSync(`${OUT_DIR}/tokens.json`, { force: true });
+rmSync(`${OUT_DIR}/Semantic-hover.json`, { force: true });
+rmSync(`${OUT_DIR}/Semantic-pressed.json`, { force: true });
 
 writeFileSync(
   `${OUT_DIR}/Core.json`,
@@ -523,27 +504,14 @@ writeFileSync(
   JSON.stringify(spacer.tokens, null, 2) + "\n"
 );
 writeFileSync(
-  `${OUT_DIR}/Semantic-hover.json`,
-  JSON.stringify(states.modes.hover, null, 2) + "\n"
-);
-writeFileSync(
-  `${OUT_DIR}/Semantic-pressed.json`,
-  JSON.stringify(states.modes.pressed, null, 2) + "\n"
-);
-writeFileSync(
   `${OUT_DIR}/$metadata.json`,
-  JSON.stringify({ tokenSetOrder }, null, 2) + "\n"
+  JSON.stringify({ tokenSetOrder: ["Core", "Semantic", "talusSpacer"] }, null, 2) + "\n"
 );
-writeFileSync(
-  `${OUT_DIR}/$themes.json`,
-  JSON.stringify(interactionThemes(), null, 2) + "\n"
-);
+writeFileSync(`${OUT_DIR}/$themes.json`, "[]\n");
 
-const report = [...core.lines, ...semantic.lines, ...spacer.lines, ...states.lines];
+const report = [...core.lines, ...semantic.lines, ...spacer.lines];
 
 console.log(`Wrote ${OUT_DIR}/Core.json`);
 console.log(`Wrote ${OUT_DIR}/Semantic.json`);
 console.log(`Wrote ${OUT_DIR}/talusSpacer.json`);
-console.log(`Wrote ${OUT_DIR}/Semantic-hover.json`);
-console.log(`Wrote ${OUT_DIR}/Semantic-pressed.json`);
 for (const line of report) console.log(line);

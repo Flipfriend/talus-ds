@@ -303,7 +303,7 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `docs/core-design-system.md` | Core spec (authority) |
 | `docs/semantic-tokens.md` | Semantic bg/fg pairs, 4.5:1 rule, and modes |
 | `docs/spacing-tokens.md` | `talusSpacer` scale: base × index, unitless |
-| `scripts/generate-core-colors.mjs` | Generates Core, Semantic, spacer, and hover/pressed sets |
+| `scripts/generate-core-colors.mjs` | Generates `Core.json`, `Semantic.json`, and `talusSpacer.json` |
 | `talus-ds/src/Core.json` | Core token set for Tokens Studio |
 | `talus-ds/src/Semantic.json` | Semantic token set for Tokens Studio |
 | `talus-ds/src/talusSpacer.json` | Spacing token set for Tokens Studio |

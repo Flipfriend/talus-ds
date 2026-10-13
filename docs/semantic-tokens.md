@@ -30,15 +30,31 @@ semantic.color.obj.03
 semantic.color.obj.04
 semantic.color.interactive.01.bg
 semantic.color.interactive.01.fg
+semantic.color.interactive.hover.bg
+semantic.color.interactive.hover.fg
+semantic.color.interactive.pressed.bg
+semantic.color.interactive.pressed.fg
 semantic.color.interactive.link
 semantic.color.interactive.disabled
 semantic.color.support.success.bg
 semantic.color.support.success.fg
+semantic.color.support.success.hover.bg
+semantic.color.support.success.hover.fg
+semantic.color.support.success.pressed.bg
+semantic.color.support.success.pressed.fg
 semantic.color.support.info.bg
 semantic.color.support.info.fg
+semantic.color.support.info.hover.bg
+semantic.color.support.info.hover.fg
+semantic.color.support.info.pressed.bg
+semantic.color.support.info.pressed.fg
 semantic.color.support.danger.bg
 semantic.color.support.danger.obj
 semantic.color.support.danger.contrast
+semantic.color.support.danger.hover.bg
+semantic.color.support.danger.hover.obj
+semantic.color.support.danger.pressed.bg
+semantic.color.support.danger.pressed.obj
 ```
 
 Token sets: `Core`, then `Semantic`. Both stay enabled. Light and dark themes are deferred.
@@ -89,19 +105,19 @@ The script exits if `obj.01`, `obj.04`, a border step, a required fill/text pair
 
 ## 5. Hover and pressed
 
-Hover and pressed keep the same token names and point them at a different Core step. The component still binds `{semantic.color.interactive.01.bg}` and `{semantic.color.interactive.01.fg}`.
+Hover and pressed are tokens inside the same family as the resting pair. They are not separate sets.
 
-`Semantic` is the enabled theme. `Semantic-hover` and `Semantic-pressed` contain only the pairs that change. A later set replaces the enabled alias for that path.
-
-| Mode | Fill |
+| Token | Fill |
 | --- | --- |
-| Enabled | Family `scale20` |
-| Hover | 4 steps darker (`scale16`), or the same distance lighter if that fill has no 4.5:1 text |
-| Pressed | 8 steps darker (`scale12`), or the same distance lighter if that fill has no 4.5:1 text |
+| `interactive.01`, `support.success`, `support.info`, `support.danger` | Family `scale20` |
+| `interactive.hover`, `support.success.hover`, `support.info.hover`, `support.danger.hover` | 4 steps darker (`scale16`), or the same distance lighter if that fill has no 4.5:1 text |
+| `interactive.pressed` and each support `.pressed` | 8 steps darker (`scale12`), or the same distance lighter if that fill has no 4.5:1 text |
 
-Pairs that move: `interactive.01`, `support.success`, `support.info`, and `support.danger` (`bg` with `obj`). `interactive.link`, `interactive.disabled`, `support.danger.contrast`, and the `ui` / `obj` tokens stay on the enabled values.
+Each state has the same text key as its resting pair: `fg` for interactive, success, and info, and `obj` for danger. `interactive.link`, `interactive.disabled`, `support.danger.contrast`, and the `ui` / `obj` tokens do not have hover or pressed versions.
 
-`interactive.disabled` stays `neutral.scale20`. It is not a mode.
+`interactive.disabled` stays `neutral.scale20`.
+
+Bind a hover variant to `{semantic.color.interactive.hover.bg}` and `{semantic.color.interactive.hover.fg}`. Bind a pressed variant to `{semantic.color.interactive.pressed.bg}` and `{semantic.color.interactive.pressed.fg}`.
 
 ---
 
@@ -118,5 +134,3 @@ Pairs that move: `interactive.01`, `support.success`, `support.info`, and `suppo
 ## 7. Tokens Studio
 
 Point Tokens Studio’s GitHub sync at the folder `talus-ds/src`. Enable `Core`, `Semantic`, and `talusSpacer`. Bind the page fill to `{semantic.color.ui.bg}`, a raised surface to `{semantic.color.ui.01}` or `{semantic.color.ui.02}`, body text to `{semantic.color.obj.01}`, secondary text to `{semantic.color.obj.02}`, and a primary button fill and label to `{semantic.color.interactive.01.bg}` and `{semantic.color.interactive.01.fg}`.
-
-Switch the `interaction` theme to `hover` or `pressed` for those variants. The binding stays on the same token.
