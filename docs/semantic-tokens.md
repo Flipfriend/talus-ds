@@ -3,7 +3,7 @@
 Follow-on to [`core-design-system.md`](./core-design-system.md).  
 Semantic tokens **alias** Core scales (`core.color.<source>.scaleN`). They never store hex values.
 
-Names follow the Paladin theme: surfaces, text, interactive, and support. Core stays the only place a color is made. `accent2` (`#EDD3C4`) is not a danger color. Danger is its own Core source.
+Names follow the Paladin theme: surfaces, text, interactive, and support. Core stays the only place a color is made. `accent1`–`accent4` are brand scales. Success, info, and danger each have their own source.
 
 ---
 
@@ -62,10 +62,10 @@ Token sets: `Core`, then `Semantic`. Both stay enabled. Light and dark themes ar
 | `interactive.01.fg` | Accent1 step | **4.5:1** on that fill |
 | `interactive.link` | Accent1 step | **4.5:1** on `ui.02` |
 | `interactive.disabled` | `neutral.scale20` | Disabled control. No 4.5:1 requirement |
-| `support.success.bg` | `accent3.scale20` | Success fill |
-| `support.success.fg` | Accent3 step | **4.5:1** on that fill |
-| `support.info.bg` | `accent4.scale20` | Info fill |
-| `support.info.fg` | Accent4 step | **4.5:1** on that fill |
+| `support.success.bg` | `success.scale20` | Success fill |
+| `support.success.fg` | Success step | **4.5:1** on that fill |
+| `support.info.bg` | `info.scale20` | Info fill |
+| `support.info.fg` | Info step | **4.5:1** on that fill |
 | `support.danger.bg` | `danger.scale20` | Danger fill |
 | `support.danger.obj` | Danger step | **4.5:1** on that fill. Text and icons on the danger background |
 | `support.danger.contrast` | Danger step | **4.5:1** on `ui.02`. Danger text and icons on a UI surface |
@@ -83,20 +83,40 @@ The generator resolves Core with the same LCH lighten and mix used in the token 
 5. Picks `interactive.link` as the accent1 step nearest `ui.02` that still clears 4.5:1. Picks `support.danger.contrast` the same way on the danger ramp.
 6. Sets `interactive.disabled` to `neutral.scale20`.
 
-The script exits if `obj.01`, `obj.02`, a border step, or a required fill/text pair cannot be found. Re-run `node scripts/generate-core-colors.mjs` after a seed change.
+The script exits if `obj.01`, `obj.04`, a border step, a required fill/text pair, or a hover/pressed pair cannot be found. Re-run `node scripts/generate-core-colors.mjs` after a seed change.
 
 ---
 
-## 5. Guardrails
+## 5. Hover and pressed
+
+Hover and pressed keep the same token names and point them at a different Core step. The component still binds `{semantic.color.interactive.01.bg}` and `{semantic.color.interactive.01.fg}`.
+
+`Semantic` is the enabled theme. `Semantic-hover` and `Semantic-pressed` contain only the pairs that change. A later set replaces the enabled alias for that path.
+
+| Mode | Fill |
+| --- | --- |
+| Enabled | Family `scale20` |
+| Hover | 4 steps darker (`scale16`), or the same distance lighter if that fill has no 4.5:1 text |
+| Pressed | 8 steps darker (`scale12`), or the same distance lighter if that fill has no 4.5:1 text |
+
+Pairs that move: `interactive.01`, `support.success`, `support.info`, and `support.danger` (`bg` with `obj`). `interactive.link`, `interactive.disabled`, `support.danger.contrast`, and the `ui` / `obj` tokens stay on the enabled values.
+
+`interactive.disabled` stays `neutral.scale20`. It is not a mode.
+
+---
+
+## 6. Guardrails
 
 1. No hex on Semantic color tokens — aliases only.
 2. Semantic tokens point at Core, not at other Semantic tokens.
 3. Components use Semantic, not Core.
 4. Do not reintroduce `layer1`, `layer2`, `layer3`, `callout`, or semantic accent roles beside these names.
-5. Do not map `danger` onto `accent2`.
+5. Do not map `danger`, `success`, or `info` onto an accent ramp. Accents stay available for a brand theme.
 
 ---
 
-## 6. Tokens Studio
+## 7. Tokens Studio
 
-Point Tokens Studio’s GitHub sync at the folder `talus-ds/src`. Enable `Core` and `Semantic`. Bind the page fill to `{semantic.color.ui.bg}`, a raised surface to `{semantic.color.ui.01}` or `{semantic.color.ui.02}`, body text to `{semantic.color.obj.01}`, secondary text to `{semantic.color.obj.02}`, and a primary button fill and label to `{semantic.color.interactive.01.bg}` and `{semantic.color.interactive.01.fg}`.
+Point Tokens Studio’s GitHub sync at the folder `talus-ds/src`. Enable `Core`, `Semantic`, and `talusSpacer`. Bind the page fill to `{semantic.color.ui.bg}`, a raised surface to `{semantic.color.ui.01}` or `{semantic.color.ui.02}`, body text to `{semantic.color.obj.01}`, secondary text to `{semantic.color.obj.02}`, and a primary button fill and label to `{semantic.color.interactive.01.bg}` and `{semantic.color.interactive.01.fg}`.
+
+Switch the `interaction` theme to `hover` or `pressed` for those variants. The binding stays on the same token.

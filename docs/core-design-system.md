@@ -55,6 +55,8 @@ Each **source** is a self-contained ramp under `core.color.<source>`:
 | `accent2` | A secondary color scale |
 | `accent3` | A tertiary color scale |
 | `accent4` | A quaternary color scale |
+| `success` | A success color scale. Same bookended ramp as the accents |
+| `info` | An info color scale. Same bookended ramp as the accents |
 | `danger` | A danger color scale. Same bookended ramp as the accents |
 
 Adding or removing a source requires an update to this doc first.
@@ -113,7 +115,7 @@ Example with step `0.025`: `scale1` → lighten `0.025`, `scale2` → `0.05`, �
 
 ### 3.3 Accents (bookended ramp)
 
-For `accent1` … `accent4` and `danger`, the ramp is pinned to black and white. The seed always sits at **`scale20`**, and every step between the bookends is an even **LCH mix** across that side’s span.
+For `accent1` … `accent4`, `success`, `info`, and `danger`, the ramp is pinned to black and white. The seed always sits at **`scale20`**, and every step between the bookends is an even **LCH mix** across that side’s span.
 
 1. **Anchor index** `S` is **`20`** for every accent. It does not move when the seed hex changes.
 2. **Bookends** (fixed hex, not aliases):
@@ -167,7 +169,7 @@ Examples:
 | Case | lowercase | `Neutral`, `Accent1` |
 | Separators | dots between path segments; hyphens inside a segment when needed | spaces, camelCase paths |
 | Scale indices | `scale0` … `scale40` (no zero-padding) | `scale01`, `scale1` as the dark end, `s0`, `neutral-100` |
-| Core sources | `neutral`, `accent1` … `accent4`, `danger` | `blue`, `red`, `brand` as Core source names |
+| Core sources | `neutral`, `accent1` … `accent4`, `success`, `info`, `danger` | `blue`, `red`, `brand` as Core source names |
 | Semantic nesting | `semantic.color.*` referencing `core.color.*` | `core.color.semantic.*` |
 | Types | Tokens Studio `type: "color"` for all color tokens | Mixing type fields inconsistently |
 
@@ -271,6 +273,10 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `accent3` source index | `20` (fixed) | Locked |
 | `accent4.source` | `#16BAC5` | Locked |
 | `accent4` source index | `20` (fixed) | Locked |
+| `success.source` | `#25C64B` | Proposed |
+| `success` source index | `20` (fixed) | Locked |
+| `info.source` | `#FFEB3B` | Proposed |
+| `info` source index | `20` (fixed) | Locked |
 | `danger.source` | `#C3352B` | Proposed |
 | `danger` source index | `20` (fixed) | Locked |
 | Token files | `talus-ds/src/Core.json` and `talus-ds/src/Semantic.json` | Provisional |
@@ -297,7 +303,7 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `docs/core-design-system.md` | Core spec (authority) |
 | `docs/semantic-tokens.md` | Semantic bg/fg pairs, 4.5:1 rule, and modes |
 | `docs/spacing-tokens.md` | `talusSpacer` scale: base × index, unitless |
-| `scripts/generate-core-colors.mjs` | Generates `Core.json`, `Semantic.json`, and `talusSpacer.json` |
+| `scripts/generate-core-colors.mjs` | Generates Core, Semantic, spacer, and hover/pressed sets |
 | `talus-ds/src/Core.json` | Core token set for Tokens Studio |
 | `talus-ds/src/Semantic.json` | Semantic token set for Tokens Studio |
 | `talus-ds/src/talusSpacer.json` | Spacing token set for Tokens Studio |

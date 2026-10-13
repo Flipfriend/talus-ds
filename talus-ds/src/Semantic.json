@@ -68,21 +68,21 @@
       "support": {
         "success": {
           "bg": {
-            "value": "{core.color.accent3.scale20}",
+            "value": "{core.color.success.scale20}",
             "type": "color"
           },
           "fg": {
-            "value": "{core.color.accent3.scale3}",
+            "value": "{core.color.success.scale7}",
             "type": "color"
           }
         },
         "info": {
           "bg": {
-            "value": "{core.color.accent4.scale20}",
+            "value": "{core.color.info.scale20}",
             "type": "color"
           },
           "fg": {
-            "value": "{core.color.accent4.scale7}",
+            "value": "{core.color.info.scale9}",
             "type": "color"
           }
         },

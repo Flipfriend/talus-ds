@@ -2,6 +2,8 @@
   "tokenSetOrder": [
     "Core",
     "Semantic",
-    "talusSpacer"
+    "talusSpacer",
+    "Semantic-hover",
+    "Semantic-pressed"
   ]
 }

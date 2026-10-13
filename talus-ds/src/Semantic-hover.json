@@ -1,0 +1,50 @@
+{
+  "semantic": {
+    "color": {
+      "interactive": {
+        "01": {
+          "bg": {
+            "value": "{core.color.accent1.scale16}",
+            "type": "color"
+          },
+          "fg": {
+            "value": "{core.color.accent1.scale37}",
+            "type": "color"
+          }
+        }
+      },
+      "support": {
+        "success": {
+          "bg": {
+            "value": "{core.color.success.scale16}",
+            "type": "color"
+          },
+          "fg": {
+            "value": "{core.color.success.scale3}",
+            "type": "color"
+          }
+        },
+        "info": {
+          "bg": {
+            "value": "{core.color.info.scale16}",
+            "type": "color"
+          },
+          "fg": {
+            "value": "{core.color.info.scale6}",
+            "type": "color"
+          }
+        },
+        "danger": {
+          "bg": {
+            "value": "{core.color.danger.scale16}",
+            "type": "color"
+          },
+          "obj": {
+            "value": "{core.color.danger.scale34}",
+            "type": "color"
+          }
+        }
+      }
+    }
+  }
+}

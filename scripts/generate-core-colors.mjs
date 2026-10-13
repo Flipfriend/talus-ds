@@ -1,7 +1,8 @@
 // Generates Tokens Studio files in talus-ds/src/ for a folder sync.
 //
-// Core.json, Semantic.json, and talusSpacer.json are separate token sets.
-// $metadata.json sets their order. Light/dark themes are deferred.
+// Core.json, Semantic.json, talusSpacer.json, and the hover/pressed
+// override sets are separate token sets. $metadata.json sets their order.
+// $themes.json turns a state override on without renaming tokens.
 //
 // Usage: node scripts/generate-core-colors.mjs
 
@@ -22,6 +23,8 @@ const SOURCES = {
   accent2: "#EDD3C4",
   accent3: "#558B6E",
   accent4: "#16BAC5",
+  success: "#25C64B",
+  info: "#FFEB3B",
   danger: "#C3352B",
 };
 
@@ -304,8 +307,8 @@ function buildSemantic(core) {
 
   const fills = [
     { name: "interactive.01", ramp: "accent1" },
-    { name: "support.success", ramp: "accent3" },
-    { name: "support.info", ramp: "accent4" },
+    { name: "support.success", ramp: "success" },
+    { name: "support.info", ramp: "info" },
   ];
   const pairs = {};
   for (const fill of fills) {
@@ -415,9 +418,94 @@ function buildSpacer() {
   return { tokens, lines };
 }
 
+const STATE_SHIFTS = { hover: 4, pressed: 8 };
+const STATE_PAIRS = [
+  { path: ["interactive", "01"], ramp: "accent1", text: "fg", label: "interactive.01" },
+  { path: ["support", "success"], ramp: "success", text: "fg", label: "support.success" },
+  { path: ["support", "info"], ramp: "info", text: "fg", label: "support.info" },
+  { path: ["support", "danger"], ramp: "danger", text: "obj", label: "support.danger" },
+];
+
+function setToken(root, path, key, token) {
+  let node = root;
+  for (const part of ["semantic", "color", ...path]) {
+    node[part] = node[part] ?? {};
+    node = node[part];
+  }
+  node[key] = token;
+}
+
+function buildStateModes(core) {
+  const modes = {};
+  const lines = [];
+
+  for (const [mode, steps] of Object.entries(STATE_SHIFTS)) {
+    const tree = {};
+    for (const pair of STATE_PAIRS) {
+      const anchor = core.anchors[pair.ramp];
+      const palette = core.resolved[pair.ramp];
+      let chosen = null;
+
+      for (const direction of [-1, 1]) {
+        const bgIndex = anchor + direction * steps;
+        if (bgIndex < 0 || bgIndex > STEPS) continue;
+        const picked = pickOnRamp(palette[bgIndex], palette, bgIndex);
+        if (!picked) continue;
+        chosen = { bgIndex, picked, direction };
+        break;
+      }
+
+      if (!chosen) {
+        throw new Error(
+          `${mode} ${pair.label}: no foreground reaches ${MIN_CONTRAST}:1 at ${pair.ramp}.scale${anchor} ± ${steps}`
+        );
+      }
+
+      setToken(tree, pair.path, "bg", alias(pair.ramp, chosen.bgIndex));
+      setToken(tree, pair.path, pair.text, alias(pair.ramp, chosen.picked.index));
+      const side = chosen.direction < 0 ? "darker" : "lighter";
+      lines.push(
+        `${mode} ${pair.label}.bg ${pair.ramp}.scale${chosen.bgIndex} (${side})  ${pair.label}.${pair.text} ${pair.ramp}.scale${chosen.picked.index}  ${chosen.picked.ratio.toFixed(2)}:1`
+      );
+    }
+    modes[mode] = tree;
+  }
+
+  return { modes, lines };
+}
+
+function interactionThemes() {
+  const sets = ["Semantic-hover", "Semantic-pressed"];
+  return ["enabled", "hover", "pressed"].map((name) => {
+    const selectedTokenSets = {
+      Core: "source",
+      Semantic: "enabled",
+      talusSpacer: "enabled",
+    };
+    for (const set of sets) {
+      selectedTokenSets[set] = set === `Semantic-${name}` ? "enabled" : "disabled";
+    }
+    return {
+      id: name,
+      name,
+      group: "interaction",
+      selectedTokenSets,
+      $figmaStyleReferences: {},
+    };
+  });
+}
+
 const core = buildCore(SOURCES);
 const semantic = buildSemantic(core);
 const spacer = buildSpacer();
+const states = buildStateModes(core);
+const tokenSetOrder = [
+  "Core",
+  "Semantic",
+  "talusSpacer",
+  "Semantic-hover",
+  "Semantic-pressed",
+];
 
 mkdirSync(OUT_DIR, { recursive: true });
 rmSync(`${OUT_DIR}/tokens.json`, { force: true });
@@ -435,14 +523,27 @@ writeFileSync(
   JSON.stringify(spacer.tokens, null, 2) + "\n"
 );
 writeFileSync(
-  `${OUT_DIR}/$metadata.json`,
-  JSON.stringify({ tokenSetOrder: ["Core", "Semantic", "talusSpacer"] }, null, 2) + "\n"
+  `${OUT_DIR}/Semantic-hover.json`,
+  JSON.stringify(states.modes.hover, null, 2) + "\n"
 );
-writeFileSync(`${OUT_DIR}/$themes.json`, "[]\n");
+writeFileSync(
+  `${OUT_DIR}/Semantic-pressed.json`,
+  JSON.stringify(states.modes.pressed, null, 2) + "\n"
+);
+writeFileSync(
+  `${OUT_DIR}/$metadata.json`,
+  JSON.stringify({ tokenSetOrder }, null, 2) + "\n"
+);
+writeFileSync(
+  `${OUT_DIR}/$themes.json`,
+  JSON.stringify(interactionThemes(), null, 2) + "\n"
+);
 
-const report = [...core.lines, ...semantic.lines, ...spacer.lines];
+const report = [...core.lines, ...semantic.lines, ...spacer.lines, ...states.lines];
 
 console.log(`Wrote ${OUT_DIR}/Core.json`);
 console.log(`Wrote ${OUT_DIR}/Semantic.json`);
 console.log(`Wrote ${OUT_DIR}/talusSpacer.json`);
+console.log(`Wrote ${OUT_DIR}/Semantic-hover.json`);
+console.log(`Wrote ${OUT_DIR}/Semantic-pressed.json`);
 for (const line of report) console.log(line);
