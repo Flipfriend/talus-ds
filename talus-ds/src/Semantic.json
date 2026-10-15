@@ -151,7 +151,7 @@
             "value": "{core.color.danger.scale20}",
             "type": "color"
           },
-          "obj": {
+          "fg": {
             "value": "{core.color.danger.scale38}",
             "type": "color"
           },
@@ -164,7 +164,7 @@
               "value": "{core.color.danger.scale16}",
               "type": "color"
             },
-            "obj": {
+            "fg": {
               "value": "{core.color.danger.scale34}",
               "type": "color"
             }
@@ -174,7 +174,7 @@
               "value": "{core.color.danger.scale12}",
               "type": "color"
             },
-            "obj": {
+            "fg": {
               "value": "{core.color.danger.scale30}",
               "type": "color"
             }
