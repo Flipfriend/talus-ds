@@ -2,6 +2,7 @@
   "tokenSetOrder": [
     "Core",
     "Semantic",
-    "talusSpacer"
+    "talusSpacer",
+    "typography"
   ]
 }

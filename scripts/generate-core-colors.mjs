@@ -1,7 +1,8 @@
 // Generates Tokens Studio files in talus-ds/src/ for a folder sync.
 //
-// Core.json, Semantic.json, and talusSpacer.json are separate token sets.
-// $metadata.json sets their order. Hover and pressed live inside Semantic.
+// Core.json, Semantic.json, talusSpacer.json, and typography.json are
+// separate token sets. $metadata.json sets their order. Hover and pressed
+// live inside Semantic. The generator does not write typography.json.
 //
 // Usage: node scripts/generate-core-colors.mjs
 
@@ -505,7 +506,7 @@ writeFileSync(
 );
 writeFileSync(
   `${OUT_DIR}/$metadata.json`,
-  JSON.stringify({ tokenSetOrder: ["Core", "Semantic", "talusSpacer"] }, null, 2) + "\n"
+  JSON.stringify({ tokenSetOrder: ["Core", "Semantic", "talusSpacer", "typography"] }, null, 2) + "\n"
 );
 writeFileSync(`${OUT_DIR}/$themes.json`, "[]\n");
 

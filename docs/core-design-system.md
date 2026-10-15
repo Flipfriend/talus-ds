@@ -26,13 +26,14 @@ Primary authoring tool: **Tokens Studio for Figma** (Pro), synced to this repo.
 | **Core** | `Core` | Color primitives | Yes (sources only) |
 | **Semantic** | `Semantic` | Intent-based color aliases used by components and UI | No — aliases only |
 | **Spacer** | `talusSpacer` | Spacing, padding, and margin steps. `{talusSpacer.n}` = `n × base` | The `base` token only |
+| **Typography** | `typography` | Font primitives and text styles. Styles alias the primitives | The primitive values only |
 
 ### Rules
 
 - **Core is never applied directly in UI.** Components and styles reference Semantic tokens.
 - **Semantic never invents values.** Every Semantic color points at a Core token (or another Semantic alias).
 - **One-way dependency:** Semantic → Core. Never Core → Semantic.
-- Token sets stay enabled in Tokens Studio in order: `Core`, `Semantic`, then `talusSpacer`.
+- Token sets stay enabled in Tokens Studio in order: `Core`, `Semantic`, `talusSpacer`, then `typography`.
 
 ### Out of scope for Core (for now)
 
@@ -307,3 +308,4 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `talus-ds/src/Core.json` | Core token set for Tokens Studio |
 | `talus-ds/src/Semantic.json` | Semantic token set for Tokens Studio |
 | `talus-ds/src/talusSpacer.json` | Spacing token set for Tokens Studio |
+| `talus-ds/src/typography.json` | Typography token set for Tokens Studio |
