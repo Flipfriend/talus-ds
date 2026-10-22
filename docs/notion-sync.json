@@ -1,0 +1,41 @@
+{
+  "hubPageId": "400a0094e2f38082a0ccf7fed2b360c0",
+  "tokenSetsDatabaseId": "25e0927ad1b4482d8e672fad659ff9f5",
+  "tokenSetsDataSourceId": "7361249c-acbd-448d-aa30-b3833899b0de",
+  "guidelinesDatabaseId": "6515dfaebaa544958b1dc2a9bbd7bf6a",
+  "guidelinesDataSourceId": "90a49b9d-26e6-4f96-8eb6-5be301e01e76",
+  "sets": {
+    "Core": {
+      "pageId": "401a0094e2f3814d8787fcfa306207e9",
+      "name": "Core",
+      "role": "Color primitives: sources and scale0–scale40 ramps.",
+      "sourceFile": "talus-ds/src/Core.json",
+      "specDoc": "docs/core-design-system.md",
+      "mayContainRawValues": "Yes"
+    },
+    "Semantic": {
+      "pageId": "401a0094e2f381579851e2ba28bb12f4",
+      "name": "Semantic",
+      "role": "Intent-based color aliases used by components and UI.",
+      "sourceFile": "talus-ds/src/Semantic.json",
+      "specDoc": "docs/semantic-tokens.md",
+      "mayContainRawValues": "No"
+    },
+    "talusSpacer": {
+      "pageId": "401a0094e2f381d6ad5bcaf6df0336ea",
+      "name": "Spacing",
+      "role": "Spacing, padding, and margin steps from a single base multiplier.",
+      "sourceFile": "talus-ds/src/talusSpacer.json",
+      "specDoc": "docs/spacing-tokens.md",
+      "mayContainRawValues": "Yes"
+    },
+    "typography": {
+      "pageId": "401a0094e2f381959c67f7a9b43069e5",
+      "name": "Typography",
+      "role": "Font primitives and text styles. Styles alias the primitives.",
+      "sourceFile": "talus-ds/src/typography.json",
+      "specDoc": "docs/typography-tokens.md",
+      "mayContainRawValues": "Yes"
+    }
+  }
+}

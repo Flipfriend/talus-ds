@@ -304,8 +304,11 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `docs/core-design-system.md` | Core spec (authority) |
 | `docs/semantic-tokens.md` | Semantic bg/fg pairs, 4.5:1 rule, and modes |
 | `docs/spacing-tokens.md` | `talusSpacer` scale: base × index, unitless |
+| `docs/typography-tokens.md` | Typography primitives and composite text styles |
+| `docs/notion-hub.md` | Notion hub structure, sync secrets, and GitHub PR tracking |
 | `scripts/generate-core-colors.mjs` | Generates `Core.json`, `Semantic.json`, and `talusSpacer.json` |
 | `talus-ds/src/Core.json` | Core token set for Tokens Studio |
 | `talus-ds/src/Semantic.json` | Semantic token set for Tokens Studio |
 | `talus-ds/src/talusSpacer.json` | Spacing token set for Tokens Studio |
 | `talus-ds/src/typography.json` | Typography token set for Tokens Studio |
+| [Talus Design System (Notion)](https://app.notion.com/p/400a0094e2f38082a0ccf7fed2b360c0) | Team-facing guidelines hub and token-set overviews |

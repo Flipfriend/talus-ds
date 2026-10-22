@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "tokens": "node scripts/generate-core-colors.mjs"
+    "tokens": "node scripts/generate-core-colors.mjs",
+    "sync:notion": "node scripts/sync-notion-docs.mjs"
   },
   "dependencies": {
     "culori": "^4.0.2"
