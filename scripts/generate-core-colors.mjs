@@ -13,6 +13,7 @@ const STEPS = 40;
 const STEP_AMOUNT = 0.025;
 const COLOR_SPACE = "lch";
 const MIN_CONTRAST = 4.5;
+const DISABLED_MIN_CONTRAST = 3;
 const OUT_DIR = "talus-ds/src";
 const ACCENT_ANCHOR = 20;
 
@@ -161,10 +162,10 @@ function alias(ramp, index) {
 
 /**
  * Walk away from bgIndex toward the opposite end of the ramp.
- * The first step at or above MIN_CONTRAST is the nearest compliant color.
+ * The first step at or above minContrast is the nearest compliant color.
  * If that direction fails, try the other direction.
  */
-function pickOnRamp(bgHex, palette, bgIndex) {
+function pickOnRampAtContrast(bgHex, palette, bgIndex, minContrast) {
   const towardDark = bgIndex > STEPS / 2;
   const primary = towardDark ? -1 : 1;
 
@@ -173,10 +174,14 @@ function pickOnRamp(bgHex, palette, bgIndex) {
       const index = bgIndex + direction * step;
       if (index < 0 || index > STEPS) break;
       const ratio = wcagContrast(bgHex, palette[index]);
-      if (ratio >= MIN_CONTRAST) return { index, ratio };
+      if (ratio >= minContrast) return { index, ratio };
     }
   }
   return null;
+}
+
+function pickOnRamp(bgHex, palette, bgIndex) {
+  return pickOnRampAtContrast(bgHex, palette, bgIndex, MIN_CONTRAST);
 }
 
 function ratiosAgainst(hex, surfaces) {
@@ -403,13 +408,30 @@ function buildSemantic(core) {
     `interactive.link accent1.scale${link.index}  ui.02 ${link.ratio.toFixed(2)}:1`
   );
 
-  const disabledIndex = ACCENT_ANCHOR;
-  lines.push(`interactive.disabled neutral.scale${disabledIndex}`);
+  const disabledBgIndex = ACCENT_ANCHOR;
+  const disabledBgHex = neutral[disabledBgIndex];
+  const disabledFg = pickOnRampAtContrast(
+    disabledBgHex,
+    neutral,
+    disabledBgIndex,
+    DISABLED_MIN_CONTRAST
+  );
+  if (!disabledFg) {
+    throw new Error(
+      `interactive.disabled.fg: no neutral step reaches ${DISABLED_MIN_CONTRAST}:1 on neutral.scale${disabledBgIndex}`
+    );
+  }
+  lines.push(
+    `interactive.disabled.bg neutral.scale${disabledBgIndex}  interactive.disabled.fg neutral.scale${disabledFg.index}  ${disabledFg.ratio.toFixed(2)}:1`
+  );
 
   const interactive = {
     "01": pairs["interactive.01"],
     link: alias("accent1", link.index),
-    disabled: alias("neutral", disabledIndex),
+    disabled: {
+      bg: alias("neutral", disabledBgIndex),
+      fg: alias("neutral", disabledFg.index),
+    },
   };
   const support = {
     success: { ...pairs["support.success"] },

@@ -35,7 +35,8 @@ semantic.color.interactive.hover.fg
 semantic.color.interactive.pressed.bg
 semantic.color.interactive.pressed.fg
 semantic.color.interactive.link
-semantic.color.interactive.disabled
+semantic.color.interactive.disabled.bg
+semantic.color.interactive.disabled.fg
 semantic.color.support.success.bg
 semantic.color.support.success.fg
 semantic.color.support.success.hover.bg
@@ -83,7 +84,8 @@ Token sets: `Core`, then `Semantic`. Both stay enabled. Light and dark themes ar
 | `interactive.01.bg` | `accent1.scale20` | Primary button fill |
 | `interactive.01.fg` | Accent1 step | **4.5:1** on that fill |
 | `interactive.link` | Accent1 step | **4.5:1** on `ui.02` |
-| `interactive.disabled` | `neutral.scale20` | Disabled control. No 4.5:1 requirement |
+| `interactive.disabled.bg` | `neutral.scale20` | Disabled control fill |
+| `interactive.disabled.fg` | Nearest neutral step | **3:1** on `interactive.disabled.bg`. Disabled controls are WCAG-exempt; this is a Talus legibility standard |
 | `support.success.bg` | `success.scale20` | Success fill |
 | `support.success.fg` | Success step | **4.5:1** on that fill |
 | `support.info.bg` | `info.scale20` | Info fill |
@@ -105,7 +107,7 @@ The generator resolves Core with the same LCH lighten and mix used in the token 
 3. Looks between `obj.01` and `ui.02` for steps at 3:1 or better against all three surfaces. The three closest to the surfaces become `ui.03`, `ui.04`, and `ui.05`.
 4. Picks `interactive.01.fg`, `support.success.fg`, `support.info.fg`, `support.warning.fg`, and `support.danger.fg` as the nearest opposite-side step on that fill’s own ramp at 4.5:1 or better.
 5. Picks `interactive.link` as the accent1 step nearest `ui.02` that still clears 4.5:1. Picks `support.danger.contrast` the same way on the danger ramp.
-6. Sets `interactive.disabled` to `neutral.scale20`.
+6. Sets `interactive.disabled.bg` to `neutral.scale20`, then selects the nearest neutral step for `interactive.disabled.fg` that reaches 3:1.
 
 The script exits if `obj.01`, `obj.04`, a border step, a required fill/text pair, or a hover/pressed pair cannot be found. Re-run `node scripts/generate-core-colors.mjs` after a seed change.
 
@@ -123,7 +125,7 @@ Hover and pressed are tokens inside the same family as the resting pair. They ar
 
 Each state has the same text key as its resting pair: `fg` for interactive, success, info, warning, and danger. `interactive.link`, `interactive.disabled`, `support.danger.contrast`, and the `ui` / `obj` tokens do not have hover or pressed versions.
 
-`interactive.disabled` stays `neutral.scale20`.
+`interactive.disabled` is a static `bg` / `fg` pair: the background stays `neutral.scale20`, and the foreground clears the Talus 3:1 legibility target.
 
 Bind a hover variant to `{semantic.color.interactive.hover.bg}` and `{semantic.color.interactive.hover.fg}`. Bind a pressed variant to `{semantic.color.interactive.pressed.bg}` and `{semantic.color.interactive.pressed.fg}`.
 

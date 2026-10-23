@@ -81,8 +81,14 @@
           "type": "color"
         },
         "disabled": {
-          "value": "{core.color.neutral.scale20}",
-          "type": "color"
+          "bg": {
+            "value": "{core.color.neutral.scale20}",
+            "type": "color"
+          },
+          "fg": {
+            "value": "{core.color.neutral.scale37}",
+            "type": "color"
+          }
         }
       },
       "support": {
