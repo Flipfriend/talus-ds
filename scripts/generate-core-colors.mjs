@@ -25,6 +25,7 @@ const SOURCES = {
   accent4: "#16BAC5",
   success: "#25C64B",
   info: "#FFEB3B",
+  warning: "#FFB300",
   danger: "#C3352B",
 };
 
@@ -217,7 +218,8 @@ const STATE_PAIRS = [
   { group: "interactive", key: null, ramp: "accent1", text: "fg", label: "interactive" },
   { group: "support", key: "success", ramp: "success", text: "fg", label: "support.success" },
   { group: "support", key: "info", ramp: "info", text: "fg", label: "support.info" },
-  { group: "support", key: "danger", ramp: "danger", text: "obj", label: "support.danger" },
+  { group: "support", key: "warning", ramp: "warning", text: "fg", label: "support.warning" },
+  { group: "support", key: "danger", ramp: "danger", text: "fg", label: "support.danger" },
 ];
 
 function pickState(core, ramp, steps, label) {
@@ -341,6 +343,7 @@ function buildSemantic(core) {
     { name: "interactive.01", ramp: "accent1" },
     { name: "support.success", ramp: "success" },
     { name: "support.info", ramp: "info" },
+    { name: "support.warning", ramp: "warning" },
   ];
   const pairs = {};
   for (const fill of fills) {
@@ -366,8 +369,8 @@ function buildSemantic(core) {
   const dangerPalette = core.resolved[dangerRamp];
   const dangerBgIndex = core.anchors[dangerRamp];
   const dangerBgHex = dangerPalette[dangerBgIndex];
-  const dangerObj = requirePair(
-    "support.danger.obj",
+  const dangerFg = requirePair(
+    "support.danger.fg",
     pickOnRamp(dangerBgHex, dangerPalette, dangerBgIndex),
     dangerBgHex,
     dangerPalette
@@ -383,7 +386,7 @@ function buildSemantic(core) {
     surfaces
   );
   lines.push(
-    `support.danger.bg ${dangerRamp}.scale${dangerBgIndex}  support.danger.obj ${dangerRamp}.scale${dangerObj.index}  ${dangerObj.ratio.toFixed(2)}:1`
+    `support.danger.bg ${dangerRamp}.scale${dangerBgIndex}  support.danger.fg ${dangerRamp}.scale${dangerFg.index}  ${dangerFg.ratio.toFixed(2)}:1`
   );
   lines.push(
     `support.danger.contrast ${dangerRamp}.scale${dangerContrast.index}  ${formatRatios(dangerContrastRatios)}`
@@ -411,9 +414,10 @@ function buildSemantic(core) {
   const support = {
     success: { ...pairs["support.success"] },
     info: { ...pairs["support.info"] },
+    warning: { ...pairs["support.warning"] },
     danger: {
       bg: alias(dangerRamp, dangerBgIndex),
-      obj: alias(dangerRamp, dangerObj.index),
+      fg: alias(dangerRamp, dangerFg.index),
       contrast: alias(dangerRamp, dangerContrast.index),
     },
   };
@@ -440,7 +444,7 @@ function buildSemantic(core) {
     link: interactive.link,
     disabled: interactive.disabled,
   };
-  for (const key of ["success", "info", "danger"]) {
+  for (const key of ["success", "info", "warning", "danger"]) {
     support[key] = {
       ...support[key],
       hover: stateTokens[key].hover,

@@ -146,6 +146,36 @@
             }
           }
         },
+        "warning": {
+          "bg": {
+            "value": "{core.color.warning.scale20}",
+            "type": "color"
+          },
+          "fg": {
+            "value": "{core.color.warning.scale8}",
+            "type": "color"
+          },
+          "hover": {
+            "bg": {
+              "value": "{core.color.warning.scale16}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.warning.scale5}",
+              "type": "color"
+            }
+          },
+          "pressed": {
+            "bg": {
+              "value": "{core.color.warning.scale12}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.warning.scale37}",
+              "type": "color"
+            }
+          }
+        },
         "danger": {
           "bg": {
             "value": "{core.color.danger.scale20}",

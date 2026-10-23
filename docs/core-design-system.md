@@ -58,6 +58,7 @@ Each **source** is a self-contained ramp under `core.color.<source>`:
 | `accent4` | A quaternary color scale |
 | `success` | A success color scale. Same bookended ramp as the accents |
 | `info` | An info color scale. Same bookended ramp as the accents |
+| `warning` | A warning color scale. Same bookended ramp as the accents |
 | `danger` | A danger color scale. Same bookended ramp as the accents |
 
 Adding or removing a source requires an update to this doc first.
@@ -116,7 +117,7 @@ Example with step `0.025`: `scale1` → lighten `0.025`, `scale2` → `0.05`, �
 
 ### 3.3 Accents (bookended ramp)
 
-For `accent1` … `accent4`, `success`, `info`, and `danger`, the ramp is pinned to black and white. The seed always sits at **`scale20`**, and every step between the bookends is an even **LCH mix** across that side’s span.
+For `accent1` … `accent4`, `success`, `info`, `warning`, and `danger`, the ramp is pinned to black and white. The seed always sits at **`scale20`**, and every step between the bookends is an even **LCH mix** across that side’s span.
 
 1. **Anchor index** `S` is **`20`** for every accent. It does not move when the seed hex changes.
 2. **Bookends** (fixed hex, not aliases):
@@ -170,7 +171,7 @@ Examples:
 | Case | lowercase | `Neutral`, `Accent1` |
 | Separators | dots between path segments; hyphens inside a segment when needed | spaces, camelCase paths |
 | Scale indices | `scale0` … `scale40` (no zero-padding) | `scale01`, `scale1` as the dark end, `s0`, `neutral-100` |
-| Core sources | `neutral`, `accent1` … `accent4`, `success`, `info`, `danger` | `blue`, `red`, `brand` as Core source names |
+| Core sources | `neutral`, `accent1` … `accent4`, `success`, `info`, `warning`, `danger` | `blue`, `red`, `brand` as Core source names |
 | Semantic nesting | `semantic.color.*` referencing `core.color.*` | `core.color.semantic.*` |
 | Types | Tokens Studio `type: "color"` for all color tokens | Mixing type fields inconsistently |
 
@@ -278,6 +279,8 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `success` source index | `20` (fixed) | Locked |
 | `info.source` | `#FFEB3B` | Proposed |
 | `info` source index | `20` (fixed) | Locked |
+| `warning.source` | `#FFB300` | Proposed |
+| `warning` source index | `20` (fixed) | Locked |
 | `danger.source` | `#C3352B` | Proposed |
 | `danger` source index | `20` (fixed) | Locked |
 | Token files | `talus-ds/src/Core.json` and `talus-ds/src/Semantic.json` | Provisional |

@@ -3,7 +3,7 @@
 Follow-on to [`core-design-system.md`](./core-design-system.md).  
 Semantic tokens **alias** Core scales (`core.color.<source>.scaleN`). They never store hex values.
 
-Names follow the Paladin theme: surfaces, text, interactive, and support. Core stays the only place a color is made. `accent1`–`accent4` are brand scales. Success, info, and danger each have their own source.
+Names follow the Paladin theme: surfaces, text, interactive, and support. Core stays the only place a color is made. `accent1`–`accent4` are brand scales. Success, info, warning, and danger each have their own source.
 
 ---
 
@@ -48,13 +48,19 @@ semantic.color.support.info.hover.bg
 semantic.color.support.info.hover.fg
 semantic.color.support.info.pressed.bg
 semantic.color.support.info.pressed.fg
+semantic.color.support.warning.bg
+semantic.color.support.warning.fg
+semantic.color.support.warning.hover.bg
+semantic.color.support.warning.hover.fg
+semantic.color.support.warning.pressed.bg
+semantic.color.support.warning.pressed.fg
 semantic.color.support.danger.bg
-semantic.color.support.danger.obj
+semantic.color.support.danger.fg
 semantic.color.support.danger.contrast
 semantic.color.support.danger.hover.bg
-semantic.color.support.danger.hover.obj
+semantic.color.support.danger.hover.fg
 semantic.color.support.danger.pressed.bg
-semantic.color.support.danger.pressed.obj
+semantic.color.support.danger.pressed.fg
 ```
 
 Token sets: `Core`, then `Semantic`. Both stay enabled. Light and dark themes are deferred.
@@ -82,8 +88,10 @@ Token sets: `Core`, then `Semantic`. Both stay enabled. Light and dark themes ar
 | `support.success.fg` | Success step | **4.5:1** on that fill |
 | `support.info.bg` | `info.scale20` | Info fill |
 | `support.info.fg` | Info step | **4.5:1** on that fill |
+| `support.warning.bg` | `warning.scale20` | Warning fill |
+| `support.warning.fg` | Warning step | **4.5:1** on that fill |
 | `support.danger.bg` | `danger.scale20` | Danger fill |
-| `support.danger.obj` | Danger step | **4.5:1** on that fill. Text and icons on the danger background |
+| `support.danger.fg` | Danger step | **4.5:1** on that fill. Text and icons on the danger background |
 | `support.danger.contrast` | Danger step | **4.5:1** on `ui.02`. Danger text and icons on a UI surface |
 
 ---
@@ -95,7 +103,7 @@ The generator resolves Core with the same LCH lighten and mix used in the token 
 1. Fixes `ui.bg`, `ui.01`, and `ui.02`.
 2. Walks `neutral` from `scale0` toward `scale40`. Keeps a step only when contrast is at least 4.5:1 against all three surfaces. `obj.01` is the darkest of those steps. `obj.04` is the lightest. `obj.02` and `obj.03` are spaced evenly between them.
 3. Looks between `obj.01` and `ui.02` for steps at 3:1 or better against all three surfaces. The three closest to the surfaces become `ui.03`, `ui.04`, and `ui.05`.
-4. Picks `interactive.01.fg`, `support.success.fg`, `support.info.fg`, and `support.danger.obj` as the nearest opposite-side step on that fill’s own ramp at 4.5:1 or better.
+4. Picks `interactive.01.fg`, `support.success.fg`, `support.info.fg`, `support.warning.fg`, and `support.danger.fg` as the nearest opposite-side step on that fill’s own ramp at 4.5:1 or better.
 5. Picks `interactive.link` as the accent1 step nearest `ui.02` that still clears 4.5:1. Picks `support.danger.contrast` the same way on the danger ramp.
 6. Sets `interactive.disabled` to `neutral.scale20`.
 
@@ -109,11 +117,11 @@ Hover and pressed are tokens inside the same family as the resting pair. They ar
 
 | Token | Fill |
 | --- | --- |
-| `interactive.01`, `support.success`, `support.info`, `support.danger` | Family `scale20` |
-| `interactive.hover`, `support.success.hover`, `support.info.hover`, `support.danger.hover` | 4 steps darker (`scale16`), or the same distance lighter if that fill has no 4.5:1 text |
+| `interactive.01`, `support.success`, `support.info`, `support.warning`, `support.danger` | Family `scale20` |
+| `interactive.hover`, `support.success.hover`, `support.info.hover`, `support.warning.hover`, `support.danger.hover` | 4 steps darker (`scale16`), or the same distance lighter if that fill has no 4.5:1 text |
 | `interactive.pressed` and each support `.pressed` | 8 steps darker (`scale12`), or the same distance lighter if that fill has no 4.5:1 text |
 
-Each state has the same text key as its resting pair: `fg` for interactive, success, and info, and `obj` for danger. `interactive.link`, `interactive.disabled`, `support.danger.contrast`, and the `ui` / `obj` tokens do not have hover or pressed versions.
+Each state has the same text key as its resting pair: `fg` for interactive, success, info, warning, and danger. `interactive.link`, `interactive.disabled`, `support.danger.contrast`, and the `ui` / `obj` tokens do not have hover or pressed versions.
 
 `interactive.disabled` stays `neutral.scale20`.
 
@@ -127,10 +135,10 @@ Bind a hover variant to `{semantic.color.interactive.hover.bg}` and `{semantic.c
 2. Semantic tokens point at Core, not at other Semantic tokens.
 3. Components use Semantic, not Core.
 4. Do not reintroduce `layer1`, `layer2`, `layer3`, `callout`, or semantic accent roles beside these names.
-5. Do not map `danger`, `success`, or `info` onto an accent ramp. Accents stay available for a brand theme.
+5. Do not map `danger`, `success`, `info`, or `warning` onto an accent ramp. Accents stay available for a brand theme.
 
 ---
 
 ## 7. Tokens Studio
 
-Point Tokens Studio’s GitHub sync at the folder `talus-ds/src`. Enable `Core`, `Semantic`, and `talusSpacer`. Bind the page fill to `{semantic.color.ui.bg}`, a raised surface to `{semantic.color.ui.01}` or `{semantic.color.ui.02}`, body text to `{semantic.color.obj.01}`, secondary text to `{semantic.color.obj.02}`, and a primary button fill and label to `{semantic.color.interactive.01.bg}` and `{semantic.color.interactive.01.fg}`.
+Point Tokens Studio’s GitHub sync at the folder `talus-ds/src`. Enable `Core`, `Semantic`, `talusSpacer`, and `typography`. Bind the page fill to `{semantic.color.ui.bg}`, a raised surface to `{semantic.color.ui.01}` or `{semantic.color.ui.02}`, body text to `{semantic.color.obj.01}`, secondary text to `{semantic.color.obj.02}`, and a primary button fill and label to `{semantic.color.interactive.01.bg}` and `{semantic.color.interactive.01.fg}`.
