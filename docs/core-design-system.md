@@ -161,8 +161,8 @@ Examples:
 - `core.color.neutral.source`
 - `core.color.accent1.scale12`
 - `semantic.color.ui.bg` *(page surface)*
-- `semantic.color.obj.01` *(text; 4.5:1 against the UI surfaces)*
-- `semantic.color.interactive.01.bg` *(primary button fill)*
+- `semantic.color.text.01` *(text; 4.5:1 against the UI surfaces)*
+- `semantic.color.interactive.primary.bg` *(primary button fill)*
 
 ### Rules
 
@@ -175,7 +175,7 @@ Examples:
 | Semantic nesting | `semantic.color.*` referencing `core.color.*` | `core.color.semantic.*` |
 | Types | Tokens Studio `type: "color"` for all color tokens | Mixing type fields inconsistently |
 
-Semantic names describe **intent** (`ui.bg`, `obj.01`, `interactive.01`, `support.success`), not raw scale indices.
+Semantic names describe **intent** (`ui.bg`, `text.01`, `interactive.primary`, `support.success`), not raw scale indices. Interactive roles alias Core accents (`primary`→`accent1` … `quaternary`→`accent4`).
 
 ---
 
@@ -283,6 +283,7 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `warning` source index | `20` (fixed) | Locked |
 | `danger.source` | `#C3352B` | Proposed |
 | `danger` source index | `20` (fixed) | Locked |
+| Interactive `on-surface` alpha | `0.12` on role `scale20` | Proposed |
 | Token files | `talus-ds/src/Core.json` and `talus-ds/src/Semantic.json` | Provisional |
 | Sync provider | Tokens Studio ↔ GitHub | Planned |
 
@@ -295,7 +296,7 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 
 1. ~~Flip §7 generation-critical rows to **Locked**.~~ **Done.**
 2. Load `talus-ds/src` into Tokens Studio; QA each source ramp (neutral lighten-only; accent bookends `#000000` / `#FFFFFF` with the seed between them).
-3. Pull that folder into Tokens Studio and QA `Core` and `Semantic` (`obj.01` at ≥ 4.5:1 on `ui.bg`, `ui.01`, and `ui.02`).
+3. Pull that folder into Tokens Studio and QA `Core` and `Semantic` (`text.01` at ≥ 4.5:1 on `ui.bg`, `ui.01`, and `ui.02`).
 4. Wire GitHub sync; duplicate Core sets in Tokens Studio for additional themes.
 
 ---

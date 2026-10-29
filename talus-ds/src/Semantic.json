@@ -14,20 +14,22 @@
           "value": "{core.color.neutral.scale30}",
           "type": "color"
         },
-        "03": {
-          "value": "{core.color.neutral.scale14}",
-          "type": "color"
-        },
-        "04": {
-          "value": "{core.color.neutral.scale13}",
-          "type": "color"
-        },
-        "05": {
-          "value": "{core.color.neutral.scale12}",
-          "type": "color"
+        "border": {
+          "subtle": {
+            "value": "{core.color.neutral.scale14}",
+            "type": "color"
+          },
+          "default": {
+            "value": "{core.color.neutral.scale13}",
+            "type": "color"
+          },
+          "strong": {
+            "value": "{core.color.neutral.scale12}",
+            "type": "color"
+          }
         }
       },
-      "obj": {
+      "text": {
         "01": {
           "value": "{core.color.neutral.scale0}",
           "type": "color"
@@ -46,7 +48,7 @@
         }
       },
       "interactive": {
-        "01": {
+        "primary": {
           "bg": {
             "value": "{core.color.accent1.scale20}",
             "type": "color"
@@ -54,26 +56,168 @@
           "fg": {
             "value": "{core.color.accent1.scale4}",
             "type": "color"
+          },
+          "hover": {
+            "bg": {
+              "value": "{core.color.accent1.scale16}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.accent1.scale37}",
+              "type": "color"
+            }
+          },
+          "pressed": {
+            "bg": {
+              "value": "{core.color.accent1.scale12}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.accent1.scale30}",
+              "type": "color"
+            }
+          },
+          "on-surface": {
+            "value": "{core.color.accent1.scale20}",
+            "type": "color",
+            "$extensions": {
+              "studio.tokens": {
+                "modify": {
+                  "type": "alpha",
+                  "value": "0.12",
+                  "space": "lch"
+                }
+              }
+            }
           }
         },
-        "hover": {
+        "secondary": {
           "bg": {
-            "value": "{core.color.accent1.scale16}",
+            "value": "{core.color.accent2.scale20}",
             "type": "color"
           },
           "fg": {
-            "value": "{core.color.accent1.scale37}",
+            "value": "{core.color.accent2.scale9}",
             "type": "color"
+          },
+          "hover": {
+            "bg": {
+              "value": "{core.color.accent2.scale16}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.accent2.scale6}",
+              "type": "color"
+            }
+          },
+          "pressed": {
+            "bg": {
+              "value": "{core.color.accent2.scale12}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.accent2.scale1}",
+              "type": "color"
+            }
+          },
+          "on-surface": {
+            "value": "{core.color.accent2.scale20}",
+            "type": "color",
+            "$extensions": {
+              "studio.tokens": {
+                "modify": {
+                  "type": "alpha",
+                  "value": "0.12",
+                  "space": "lch"
+                }
+              }
+            }
           }
         },
-        "pressed": {
+        "tertiary": {
           "bg": {
-            "value": "{core.color.accent1.scale12}",
+            "value": "{core.color.accent3.scale20}",
             "type": "color"
           },
           "fg": {
-            "value": "{core.color.accent1.scale30}",
+            "value": "{core.color.accent3.scale3}",
             "type": "color"
+          },
+          "hover": {
+            "bg": {
+              "value": "{core.color.accent3.scale16}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.accent3.scale36}",
+              "type": "color"
+            }
+          },
+          "pressed": {
+            "bg": {
+              "value": "{core.color.accent3.scale12}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.accent3.scale30}",
+              "type": "color"
+            }
+          },
+          "on-surface": {
+            "value": "{core.color.accent3.scale20}",
+            "type": "color",
+            "$extensions": {
+              "studio.tokens": {
+                "modify": {
+                  "type": "alpha",
+                  "value": "0.12",
+                  "space": "lch"
+                }
+              }
+            }
+          }
+        },
+        "quaternary": {
+          "bg": {
+            "value": "{core.color.accent4.scale20}",
+            "type": "color"
+          },
+          "fg": {
+            "value": "{core.color.accent4.scale7}",
+            "type": "color"
+          },
+          "hover": {
+            "bg": {
+              "value": "{core.color.accent4.scale16}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.accent4.scale3}",
+              "type": "color"
+            }
+          },
+          "pressed": {
+            "bg": {
+              "value": "{core.color.accent4.scale12}",
+              "type": "color"
+            },
+            "fg": {
+              "value": "{core.color.accent4.scale33}",
+              "type": "color"
+            }
+          },
+          "on-surface": {
+            "value": "{core.color.accent4.scale20}",
+            "type": "color",
+            "$extensions": {
+              "studio.tokens": {
+                "modify": {
+                  "type": "alpha",
+                  "value": "0.12",
+                  "space": "lch"
+                }
+              }
+            }
           }
         },
         "link": {
@@ -99,6 +243,10 @@
           },
           "fg": {
             "value": "{core.color.success.scale7}",
+            "type": "color"
+          },
+          "contrast": {
+            "value": "{core.color.success.scale9}",
             "type": "color"
           },
           "hover": {
@@ -131,6 +279,10 @@
             "value": "{core.color.info.scale9}",
             "type": "color"
           },
+          "contrast": {
+            "value": "{core.color.info.scale7}",
+            "type": "color"
+          },
           "hover": {
             "bg": {
               "value": "{core.color.info.scale16}",
@@ -158,6 +310,10 @@
             "type": "color"
           },
           "fg": {
+            "value": "{core.color.warning.scale8}",
+            "type": "color"
+          },
+          "contrast": {
             "value": "{core.color.warning.scale8}",
             "type": "color"
           },

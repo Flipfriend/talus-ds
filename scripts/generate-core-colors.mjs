@@ -34,9 +34,17 @@ const SPACER_BASE = 4;
 const SPACER_MAX_PX = 300;
 const SPACER_FULL_PX = 1000;
 const BORDER_MIN = 3;
+const ON_SURFACE_ALPHA = 0.12;
 const UI_SURFACES = { bg: 38, "01": 34, "02": 30 };
-const OBJ_KEYS = ["01", "02", "03", "04"];
-const REQUIRED_OBJ = ["01", "04"];
+const TEXT_KEYS = ["01", "02", "03", "04"];
+const REQUIRED_TEXT = ["01", "04"];
+const INTERACTIVE_ROLES = [
+  { role: "primary", ramp: "accent1" },
+  { role: "secondary", ramp: "accent2" },
+  { role: "tertiary", ramp: "accent3" },
+  { role: "quaternary", ramp: "accent4" },
+];
+const SUPPORT_ROLES = ["success", "info", "warning", "danger"];
 
 function mixHex(from, to, amount) {
   if (amount <= 0) return formatHex(from);
@@ -160,6 +168,15 @@ function alias(ramp, index) {
   };
 }
 
+/** Translucent wash of scale20 for chrome/selection on ui surfaces. */
+function onSurfaceAlias(ramp) {
+  return {
+    value: `{core.color.${ramp}.scale${ACCENT_ANCHOR}}`,
+    type: "color",
+    $extensions: modifyExtension("alpha", ON_SURFACE_ALPHA),
+  };
+}
+
 /**
  * Walk away from bgIndex toward the opposite end of the ramp.
  * The first step at or above minContrast is the nearest compliant color.
@@ -219,13 +236,6 @@ function requirePair(name, picked, bgHex, palette) {
 }
 
 const STATE_SHIFTS = { hover: 4, pressed: 8 };
-const STATE_PAIRS = [
-  { group: "interactive", key: null, ramp: "accent1", text: "fg", label: "interactive" },
-  { group: "support", key: "success", ramp: "success", text: "fg", label: "support.success" },
-  { group: "support", key: "info", ramp: "info", text: "fg", label: "support.info" },
-  { group: "support", key: "warning", ramp: "warning", text: "fg", label: "support.warning" },
-  { group: "support", key: "danger", ramp: "danger", text: "fg", label: "support.danger" },
-];
 
 function pickState(core, ramp, steps, label) {
   const anchor = core.anchors[ramp];
@@ -244,10 +254,22 @@ function pickState(core, ramp, steps, label) {
   );
 }
 
-function statePair(ramp, textKey, chosen) {
+function restingPair(core, ramp, label) {
+  const bgIndex = core.anchors[ramp];
+  const palette = core.resolved[ramp];
+  const bgHex = palette[bgIndex];
+  const picked = requirePair(
+    `${label}.fg`,
+    pickOnRamp(bgHex, palette, bgIndex),
+    bgHex,
+    palette
+  );
   return {
-    bg: alias(ramp, chosen.bgIndex),
-    [textKey]: alias(ramp, chosen.textIndex),
+    bg: alias(ramp, bgIndex),
+    fg: alias(ramp, picked.index),
+    bgIndex,
+    fgIndex: picked.index,
+    ratio: picked.ratio,
   };
 }
 
@@ -261,11 +283,6 @@ function buildSemantic(core) {
   );
   const lines = [];
 
-  const ui = {
-    bg: alias("neutral", UI_SURFACES.bg),
-    "01": alias("neutral", UI_SURFACES["01"]),
-    "02": alias("neutral", UI_SURFACES["02"]),
-  };
   for (const [key, index] of Object.entries(UI_SURFACES)) {
     lines.push(`ui.${key} neutral.scale${index}`);
   }
@@ -279,10 +296,10 @@ function buildSemantic(core) {
 
   if (textPassing.length < 2) {
     throw new Error(
-      `obj.01 and obj.04 need a high-contrast step and a distinct 4.5:1 step (found ${textPassing.length})`
+      `text.01 and text.04 need a high-contrast step and a distinct 4.5:1 step (found ${textPassing.length})`
     );
   }
-  const hierarchySlots = OBJ_KEYS.length;
+  const hierarchySlots = TEXT_KEYS.length;
   const lastPassing = textPassing.length - 1;
   const chosen = [];
   const used = new Set();
@@ -292,25 +309,27 @@ function buildSemantic(core) {
     used.add(pos);
     chosen.push(textPassing[pos]);
   }
-  const obj = {};
-  const objSteps = {
+  const text = {};
+  const textSteps = {
     "01": chosen[0],
     "02": chosen.length > 2 ? chosen[1] : undefined,
     "03": chosen.length > 3 ? chosen[2] : undefined,
     "04": chosen[chosen.length - 1],
   };
-  for (const key of OBJ_KEYS) {
-    const step = objSteps[key];
+  for (const key of TEXT_KEYS) {
+    const step = textSteps[key];
     if (!step) {
-      lines.push(`obj.${key} omitted`);
-      if (REQUIRED_OBJ.includes(key)) {
-        throw new Error(`obj.${key} cannot clear ${MIN_CONTRAST}:1 on every UI surface`);
+      lines.push(`text.${key} omitted`);
+      if (REQUIRED_TEXT.includes(key)) {
+        throw new Error(
+          `text.${key} cannot clear ${MIN_CONTRAST}:1 on every UI surface`
+        );
       }
       continue;
     }
-    obj[key] = alias("neutral", step.index);
+    text[key] = alias("neutral", step.index);
     lines.push(
-      `obj.${key} neutral.scale${step.index}  ${formatRatios(step.ratios)}`
+      `text.${key} neutral.scale${step.index}  ${formatRatios(step.ratios)}`
     );
   }
 
@@ -324,78 +343,69 @@ function buildSemantic(core) {
   }
   if (borderPassing.length < 3) {
     const detail = borderPassing.length
-      ? borderPassing.map((step) => `scale${step.index} ${formatRatios(step.ratios)}`).join(" | ")
+      ? borderPassing
+          .map((step) => `scale${step.index} ${formatRatios(step.ratios)}`)
+          .join(" | ")
       : "none";
-    throw new Error(`ui.03–ui.05 need 3 steps at ${BORDER_MIN}:1 (found ${detail})`);
+    throw new Error(
+      `ui.border needs 3 steps at ${BORDER_MIN}:1 (found ${detail})`
+    );
   }
-  const borders = borderPassing.slice(-3);
-  const borderKeys = ["05", "04", "03"];
-  borders.forEach((step, offset) => {
+  // slice(-3): [strong, default, subtle] — strong is closest to the surfaces
+  const borderSteps = borderPassing.slice(-3);
+  const borderKeys = ["strong", "default", "subtle"];
+  const border = {};
+  borderSteps.forEach((step, offset) => {
     const key = borderKeys[offset];
-    ui[key] = alias("neutral", step.index);
-    lines.push(`ui.${key} neutral.scale${step.index}  ${formatRatios(step.ratios)}`);
+    border[key] = alias("neutral", step.index);
+    lines.push(
+      `ui.border.${key} neutral.scale${step.index}  ${formatRatios(step.ratios)}`
+    );
   });
   const orderedUi = {
-    bg: ui.bg,
-    "01": ui["01"],
-    "02": ui["02"],
-    "03": ui["03"],
-    "04": ui["04"],
-    "05": ui["05"],
+    bg: alias("neutral", UI_SURFACES.bg),
+    "01": alias("neutral", UI_SURFACES["01"]),
+    "02": alias("neutral", UI_SURFACES["02"]),
+    border: {
+      subtle: border.subtle,
+      default: border.default,
+      strong: border.strong,
+    },
   };
 
-  const fills = [
-    { name: "interactive.01", ramp: "accent1" },
-    { name: "support.success", ramp: "success" },
-    { name: "support.info", ramp: "info" },
-    { name: "support.warning", ramp: "warning" },
-  ];
-  const pairs = {};
-  for (const fill of fills) {
-    const bgIndex = core.anchors[fill.ramp];
-    const palette = core.resolved[fill.ramp];
-    const bgHex = palette[bgIndex];
-    const picked = requirePair(
-      `${fill.name}.fg`,
-      pickOnRamp(bgHex, palette, bgIndex),
-      bgHex,
-      palette
-    );
-    pairs[fill.name] = {
-      bg: alias(fill.ramp, bgIndex),
-      fg: alias(fill.ramp, picked.index),
-    };
+  const interactive = {};
+  for (const { role, ramp } of INTERACTIVE_ROLES) {
+    const resting = restingPair(core, ramp, `interactive.${role}`);
     lines.push(
-      `${fill.name}.bg ${fill.ramp}.scale${bgIndex}  ${fill.name}.fg ${fill.ramp}.scale${picked.index}  ${picked.ratio.toFixed(2)}:1`
+      `interactive.${role}.bg ${ramp}.scale${resting.bgIndex}  interactive.${role}.fg ${ramp}.scale${resting.fgIndex}  ${resting.ratio.toFixed(2)}:1`
     );
-  }
 
-  const dangerRamp = "danger";
-  const dangerPalette = core.resolved[dangerRamp];
-  const dangerBgIndex = core.anchors[dangerRamp];
-  const dangerBgHex = dangerPalette[dangerBgIndex];
-  const dangerFg = requirePair(
-    "support.danger.fg",
-    pickOnRamp(dangerBgHex, dangerPalette, dangerBgIndex),
-    dangerBgHex,
-    dangerPalette
-  );
-  const dangerContrast = pickLink(surfaces["ui.02"], dangerPalette);
-  if (!dangerContrast) {
-    throw new Error(
-      `support.danger.contrast: no step reaches ${MIN_CONTRAST}:1 on ui.02 (best ${bestRatio(surfaces["ui.02"], dangerPalette).toFixed(2)}:1)`
+    const roleTokens = {
+      bg: resting.bg,
+      fg: resting.fg,
+    };
+    for (const [mode, steps] of Object.entries(STATE_SHIFTS)) {
+      const chosen = pickState(
+        core,
+        ramp,
+        steps,
+        `interactive.${role}.${mode}`
+      );
+      roleTokens[mode] = {
+        bg: alias(ramp, chosen.bgIndex),
+        fg: alias(ramp, chosen.textIndex),
+      };
+      const side = chosen.direction < 0 ? "darker" : "lighter";
+      lines.push(
+        `interactive.${role}.${mode}.bg ${ramp}.scale${chosen.bgIndex} (${side})  interactive.${role}.${mode}.fg ${ramp}.scale${chosen.textIndex}  ${chosen.ratio.toFixed(2)}:1`
+      );
+    }
+    roleTokens["on-surface"] = onSurfaceAlias(ramp);
+    lines.push(
+      `interactive.${role}.on-surface ${ramp}.scale${ACCENT_ANCHOR} alpha ${ON_SURFACE_ALPHA}`
     );
+    interactive[role] = roleTokens;
   }
-  const dangerContrastRatios = ratiosAgainst(
-    dangerPalette[dangerContrast.index],
-    surfaces
-  );
-  lines.push(
-    `support.danger.bg ${dangerRamp}.scale${dangerBgIndex}  support.danger.fg ${dangerRamp}.scale${dangerFg.index}  ${dangerFg.ratio.toFixed(2)}:1`
-  );
-  lines.push(
-    `support.danger.contrast ${dangerRamp}.scale${dangerContrast.index}  ${formatRatios(dangerContrastRatios)}`
-  );
 
   const linkBg = surfaces["ui.02"];
   const link = requirePair(
@@ -407,6 +417,7 @@ function buildSemantic(core) {
   lines.push(
     `interactive.link accent1.scale${link.index}  ui.02 ${link.ratio.toFixed(2)}:1`
   );
+  interactive.link = alias("accent1", link.index);
 
   const disabledBgIndex = ACCENT_ANCHOR;
   const disabledBgHex = neutral[disabledBgIndex];
@@ -424,61 +435,57 @@ function buildSemantic(core) {
   lines.push(
     `interactive.disabled.bg neutral.scale${disabledBgIndex}  interactive.disabled.fg neutral.scale${disabledFg.index}  ${disabledFg.ratio.toFixed(2)}:1`
   );
-
-  const interactive = {
-    "01": pairs["interactive.01"],
-    link: alias("accent1", link.index),
-    disabled: {
-      bg: alias("neutral", disabledBgIndex),
-      fg: alias("neutral", disabledFg.index),
-    },
+  interactive.disabled = {
+    bg: alias("neutral", disabledBgIndex),
+    fg: alias("neutral", disabledFg.index),
   };
-  const support = {
-    success: { ...pairs["support.success"] },
-    info: { ...pairs["support.info"] },
-    warning: { ...pairs["support.warning"] },
-    danger: {
-      bg: alias(dangerRamp, dangerBgIndex),
-      fg: alias(dangerRamp, dangerFg.index),
-      contrast: alias(dangerRamp, dangerContrast.index),
-    },
-  };
-  const stateTokens = {};
 
-  for (const [mode, steps] of Object.entries(STATE_SHIFTS)) {
-    for (const pair of STATE_PAIRS) {
-      const chosen = pickState(core, pair.ramp, steps, `${mode} ${pair.label}`);
-      const tokens = statePair(pair.ramp, pair.text, chosen);
-      const slot = pair.key ?? pair.group;
-      stateTokens[slot] = stateTokens[slot] ?? {};
-      stateTokens[slot][mode] = tokens;
-      const side = chosen.direction < 0 ? "darker" : "lighter";
-      lines.push(
-        `${pair.label}.${mode}.bg ${pair.ramp}.scale${chosen.bgIndex} (${side})  ${pair.label}.${mode}.${pair.text} ${pair.ramp}.scale${chosen.textIndex}  ${chosen.ratio.toFixed(2)}:1`
+  const support = {};
+  for (const ramp of SUPPORT_ROLES) {
+    const label = `support.${ramp}`;
+    const resting = restingPair(core, ramp, label);
+    lines.push(
+      `${label}.bg ${ramp}.scale${resting.bgIndex}  ${label}.fg ${ramp}.scale${resting.fgIndex}  ${resting.ratio.toFixed(2)}:1`
+    );
+
+    const contrast = pickLink(surfaces["ui.02"], core.resolved[ramp]);
+    if (!contrast) {
+      throw new Error(
+        `${label}.contrast: no step reaches ${MIN_CONTRAST}:1 on ui.02 (best ${bestRatio(surfaces["ui.02"], core.resolved[ramp]).toFixed(2)}:1)`
       );
     }
-  }
+    const contrastRatios = ratiosAgainst(
+      core.resolved[ramp][contrast.index],
+      surfaces
+    );
+    lines.push(
+      `${label}.contrast ${ramp}.scale${contrast.index}  ${formatRatios(contrastRatios)}`
+    );
 
-  const orderedInteractive = {
-    "01": interactive["01"],
-    hover: stateTokens.interactive.hover,
-    pressed: stateTokens.interactive.pressed,
-    link: interactive.link,
-    disabled: interactive.disabled,
-  };
-  for (const key of ["success", "info", "warning", "danger"]) {
-    support[key] = {
-      ...support[key],
-      hover: stateTokens[key].hover,
-      pressed: stateTokens[key].pressed,
+    const family = {
+      bg: resting.bg,
+      fg: resting.fg,
+      contrast: alias(ramp, contrast.index),
     };
+    for (const [mode, steps] of Object.entries(STATE_SHIFTS)) {
+      const chosen = pickState(core, ramp, steps, `${label}.${mode}`);
+      family[mode] = {
+        bg: alias(ramp, chosen.bgIndex),
+        fg: alias(ramp, chosen.textIndex),
+      };
+      const side = chosen.direction < 0 ? "darker" : "lighter";
+      lines.push(
+        `${label}.${mode}.bg ${ramp}.scale${chosen.bgIndex} (${side})  ${label}.${mode}.fg ${ramp}.scale${chosen.textIndex}  ${chosen.ratio.toFixed(2)}:1`
+      );
+    }
+    support[ramp] = family;
   }
 
   return {
     color: {
       ui: orderedUi,
-      obj,
-      interactive: orderedInteractive,
+      text,
+      interactive,
       support,
     },
     lines,
