@@ -261,10 +261,8 @@
             "fg": {
               "value": "{core.color.success.scale7}",
               "type": "color"
-            }
-          },
-          "contrast": {
-            "fg": {
+            },
+            "contrast": {
               "value": "{core.color.success.scale9}",
               "type": "color"
             }
@@ -314,10 +312,8 @@
             "fg": {
               "value": "{core.color.info.scale9}",
               "type": "color"
-            }
-          },
-          "contrast": {
-            "fg": {
+            },
+            "contrast": {
               "value": "{core.color.info.scale7}",
               "type": "color"
             }
@@ -367,10 +363,8 @@
             "fg": {
               "value": "{core.color.warning.scale8}",
               "type": "color"
-            }
-          },
-          "contrast": {
-            "fg": {
+            },
+            "contrast": {
               "value": "{core.color.warning.scale8}",
               "type": "color"
             }
@@ -420,10 +414,8 @@
             "fg": {
               "value": "{core.color.danger.scale38}",
               "type": "color"
-            }
-          },
-          "contrast": {
-            "fg": {
+            },
+            "contrast": {
               "value": "{core.color.danger.scale15}",
               "type": "color"
             }

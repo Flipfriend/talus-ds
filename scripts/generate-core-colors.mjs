@@ -458,7 +458,7 @@ function buildSemantic(core) {
     const contrast = pickLink(surfaces["ui.02"], core.resolved[ramp]);
     if (!contrast) {
       throw new Error(
-        `${label}.contrast: no step reaches ${MIN_CONTRAST}:1 on ui.02 (best ${bestRatio(surfaces["ui.02"], core.resolved[ramp]).toFixed(2)}:1)`
+        `${label}.default.contrast: no step reaches ${MIN_CONTRAST}:1 on ui.02 (best ${bestRatio(surfaces["ui.02"], core.resolved[ramp]).toFixed(2)}:1)`
       );
     }
     const contrastRatios = ratiosAgainst(
@@ -466,17 +466,15 @@ function buildSemantic(core) {
       surfaces
     );
     lines.push(
-      `${label}.contrast.fg ${ramp}.scale${contrast.index}  ${formatRatios(contrastRatios)}`
+      `${label}.default.contrast ${ramp}.scale${contrast.index}  ${formatRatios(contrastRatios)}`
     );
 
-    // Same group-only shape as interactive roles (default / contrast / on-surface / hover / pressed).
+    // Group-only siblings (default / on-surface / hover / pressed). Contrast lives under default with bg/fg.
     const family = {
       default: {
         bg: resting.bg,
         fg: resting.fg,
-      },
-      contrast: {
-        fg: alias(ramp, contrast.index),
+        contrast: alias(ramp, contrast.index),
       },
       "on-surface": {
         bg: onSurfaceBg(ramp),
