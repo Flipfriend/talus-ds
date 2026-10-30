@@ -168,8 +168,11 @@ function alias(ramp, index) {
   };
 }
 
-/** Translucent wash of scale20 for chrome/selection on ui surfaces. */
-function onSurfaceAlias(ramp) {
+/**
+ * Translucent wash of scale20 for chrome/selection on ui surfaces.
+ * Nested as on-surface.bg so every role/status child is a group (Figma Variables).
+ */
+function onSurfaceBg(ramp) {
   return {
     value: `{core.color.${ramp}.scale${ACCENT_ANCHOR}}`,
     type: "color",
@@ -375,14 +378,18 @@ function buildSemantic(core) {
 
   const interactive = {};
   for (const { role, ramp } of INTERACTIVE_ROLES) {
-    const resting = restingPair(core, ramp, `interactive.${role}`);
+    const resting = restingPair(core, ramp, `interactive.${role}.default`);
     lines.push(
-      `interactive.${role}.bg ${ramp}.scale${resting.bgIndex}  interactive.${role}.fg ${ramp}.scale${resting.fgIndex}  ${resting.ratio.toFixed(2)}:1`
+      `interactive.${role}.default.bg ${ramp}.scale${resting.bgIndex}  interactive.${role}.default.fg ${ramp}.scale${resting.fgIndex}  ${resting.ratio.toFixed(2)}:1`
     );
 
+    // Every child of a role is a group so Figma Variables export does not
+    // skip leaf tokens that sit next to nested hover/pressed groups.
     const roleTokens = {
-      bg: resting.bg,
-      fg: resting.fg,
+      default: {
+        bg: resting.bg,
+        fg: resting.fg,
+      },
     };
     for (const [mode, steps] of Object.entries(STATE_SHIFTS)) {
       const chosen = pickState(
@@ -400,9 +407,9 @@ function buildSemantic(core) {
         `interactive.${role}.${mode}.bg ${ramp}.scale${chosen.bgIndex} (${side})  interactive.${role}.${mode}.fg ${ramp}.scale${chosen.textIndex}  ${chosen.ratio.toFixed(2)}:1`
       );
     }
-    roleTokens["on-surface"] = onSurfaceAlias(ramp);
+    roleTokens["on-surface"] = { bg: onSurfaceBg(ramp) };
     lines.push(
-      `interactive.${role}.on-surface ${ramp}.scale${ACCENT_ANCHOR} alpha ${ON_SURFACE_ALPHA}`
+      `interactive.${role}.on-surface.bg ${ramp}.scale${ACCENT_ANCHOR} alpha ${ON_SURFACE_ALPHA}`
     );
     interactive[role] = roleTokens;
   }
@@ -443,9 +450,9 @@ function buildSemantic(core) {
   const support = {};
   for (const ramp of SUPPORT_ROLES) {
     const label = `support.${ramp}`;
-    const resting = restingPair(core, ramp, label);
+    const resting = restingPair(core, ramp, `${label}.default`);
     lines.push(
-      `${label}.bg ${ramp}.scale${resting.bgIndex}  ${label}.fg ${ramp}.scale${resting.fgIndex}  ${resting.ratio.toFixed(2)}:1`
+      `${label}.default.bg ${ramp}.scale${resting.bgIndex}  ${label}.default.fg ${ramp}.scale${resting.fgIndex}  ${resting.ratio.toFixed(2)}:1`
     );
 
     const contrast = pickLink(surfaces["ui.02"], core.resolved[ramp]);
@@ -459,14 +466,25 @@ function buildSemantic(core) {
       surfaces
     );
     lines.push(
-      `${label}.contrast ${ramp}.scale${contrast.index}  ${formatRatios(contrastRatios)}`
+      `${label}.contrast.fg ${ramp}.scale${contrast.index}  ${formatRatios(contrastRatios)}`
     );
 
+    // Same group-only shape as interactive roles (default / contrast / on-surface / hover / pressed).
     const family = {
-      bg: resting.bg,
-      fg: resting.fg,
-      contrast: alias(ramp, contrast.index),
+      default: {
+        bg: resting.bg,
+        fg: resting.fg,
+      },
+      contrast: {
+        fg: alias(ramp, contrast.index),
+      },
+      "on-surface": {
+        bg: onSurfaceBg(ramp),
+      },
     };
+    lines.push(
+      `${label}.on-surface.bg ${ramp}.scale${ACCENT_ANCHOR} alpha ${ON_SURFACE_ALPHA}`
+    );
     for (const [mode, steps] of Object.entries(STATE_SHIFTS)) {
       const chosen = pickState(core, ramp, steps, `${label}.${mode}`);
       family[mode] = {

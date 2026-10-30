@@ -162,7 +162,7 @@ Examples:
 - `core.color.accent1.scale12`
 - `semantic.color.ui.bg` *(page surface)*
 - `semantic.color.text.01` *(text; 4.5:1 against the UI surfaces)*
-- `semantic.color.interactive.primary.bg` *(primary button fill)*
+- `semantic.color.interactive.primary.default.bg` *(primary button fill)*
 
 ### Rules
 
@@ -283,7 +283,7 @@ Flow for each row: **Open → Proposed** (once a value is in) → **Locked** (on
 | `warning` source index | `20` (fixed) | Locked |
 | `danger.source` | `#C3352B` | Proposed |
 | `danger` source index | `20` (fixed) | Locked |
-| Interactive `on-surface` alpha | `0.12` on role `scale20` | Proposed |
+| Interactive / support `on-surface` alpha | `0.12` on family `scale20` | Proposed |
 | Token files | `talus-ds/src/Core.json` and `talus-ds/src/Semantic.json` | Provisional |
 | Sync provider | Tokens Studio ↔ GitHub | Planned |
 
